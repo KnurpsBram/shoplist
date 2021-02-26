@@ -42,15 +42,7 @@ String reduceProductName(String productName) {
     return productName.replaceAll("\\d", "").toLowerCase(); // remove numbers and put to lowercase TODO: remove stuff between parentheses
 }
 
-class MyApp extends StatelessWidget {
-    @override
-    Widget build(BuildContext context) {
-        return MaterialApp(
-            title : 'ShopList',
-            home  : MyStatefulWidget()
-        );
-    }
-}
+
 
 class ShopListEntry{
     final String productName;
@@ -74,15 +66,12 @@ class AppData{
 
     List _supermarket_order = ["bananas", "bread", "onion", "paprika", "courgette", "eggs"];
 
-    // TODO: init by loading from json file somehow?
     var _shopping_list = [
-        ShopListEntry(productName: "bread"),
-        ShopListEntry(productName: "bananas"),
-        ShopListEntry(productName: "eggs"),
+        ShopListEntry(productName: "paprika"),
+        ShopListEntry(productName: "courgette"),
+        ShopListEntry(productName: "onion"),
     ];
 
-
-    /* var _shopping_list = jsonDecode(readContent()).map((x) => ShopListEntry.fromJson(x)).toList(); */
 
     void _storeAppDataToDisk() {
         String string_to_write = jsonEncode(_shopping_list.map((x) => x.toJson()).toList());
@@ -101,6 +90,17 @@ class AppData{
 
 final appData = AppData();
 
+class MyApp extends StatelessWidget {
+
+    @override
+    Widget build(BuildContext context) {
+        return MaterialApp(
+            title : 'ShopList',
+            home  : MyStatefulWidget()
+        );
+    }
+}
+
 // This is main widget that holds BottomNavigationBar and determines what is shown in the main body
 class MyStatefulWidget extends StatefulWidget {
     MyStatefulWidget({Key key}) : super(key: key);
@@ -110,28 +110,28 @@ class MyStatefulWidget extends StatefulWidget {
 }
 
 class _MyStatefulWidgetState extends State<MyStatefulWidget> {
+
+    // START TEMP
+    // TODO: use this instead of that appdata object?
+    @override
+    void initState() {
+        super.initState();
+        readContent().then((String value) {
+            setState(() {
+                print("##########################################################");
+                print(value);
+                appData._shopping_list = jsonDecode(value).map<ShopListEntry>((x) => ShopListEntry.fromJson(x)).toList();
+            });
+        });
+    }
+    // END TEMP
+
     int _selectedIndex = 0;
     static TextStyle optionStyle = TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
     List<Widget> _widgetOptions = <Widget>[
         ShopList(sort_style: "home"),
         ShopList(sort_style: "supermarket"),
     ];
-
-  /* // START TEMP
-  // TODO: use this instead of that appdata object?
-  @override
-  var _shopping_list;
-  void initState() {
-      super.initState();
-      readContent().then((String value) {
-        setState(() {
-            print(value);
-            _shopping_list = jsonDecode(value).map((x) => ShopListEntry.fromJson(x)).toList();
-            /* appData._shopping_list = jsonDecode(value).map((x) => ShopListEntry.fromJson(x)).toList(); */
-        /* });
-      });
-  } */
-  // END TEMP */
 
     void _onItemTapped(int index) {
         setState(() {
@@ -162,12 +162,13 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
             ),
         );
     }
+
 }
 
 class ShopList extends StatefulWidget {
     final String sort_style; // this value here is determined by how you call myWidget=ShopList(sort_style='x')
 
-    ShopList({ Key key, this.sort_style }): super(key: key);
+    ShopList({ Key key, this.sort_style}): super(key: key);
 
     @override
     _ShopListState createState() => _ShopListState();
