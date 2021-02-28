@@ -134,7 +134,6 @@ class _BottomBarMainBodyWidgetState extends State<BottomBarMainBodyWidget> {
             ),
         );
     }
-
 }
 
 // Show the main body; it'll be a list of checkboxtiles that are sorted one way or another
