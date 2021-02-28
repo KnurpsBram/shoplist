@@ -1,16 +1,7 @@
-# shoplist
+# Shoplist
 
-A new Flutter project.
+- Craft your shopping list at home, ordered however you like.
+- Shoplist automatically sorts your shopping list according to your favourite route through the supermarket.
+- When you change the order, you help Shoplist do better next time.
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+![some text](demo/shoplist_first_demo_28feb2021.gif)
