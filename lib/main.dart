@@ -4,80 +4,56 @@ import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
 
+import 'fs.dart';
+import 'util.dart';
+import 'shop-list-entry.dart';
+
 void main() => runApp(MyApp());
 
-// TODO: move this to a utilfile?
-Future<String> get _localPath async {
-    final directory = await getApplicationDocumentsDirectory();
-    // For your reference print the AppDoc directory
-    print(directory.path);
-    return directory.path;
-}
-
-Future<File> get _localFile async {
-    final path = await _localPath;
-    return File('$path/data.txt');
-}
-
-
-Future<File> writeContent(String stringToWrite) async {
-    final file = await _localFile;
-    // Write the file
-    return file.writeAsString(stringToWrite);
-}
-
-Future<String> readContent() async {
-    try {
-        final file = await _localFile;
-        // Read the file
-        String contents = await file.readAsString();
-        return contents;
-    } catch (e) {
-        // If there is an error reading, return a default String
-        return 'Error';
-    }
-}
-
-String reduceProductName(String productName) {
-    return productName.replaceAll("\\d", "").toLowerCase(); // remove numbers and put to lowercase TODO: remove stuff between parentheses
-}
-
-
-
-class ShopListEntry{
-    final String productName;
-    bool checkedOff;
-
-    ShopListEntry({ @required this.productName, this.checkedOff=false});
-
-    ShopListEntry.fromJson(Map<String, dynamic> json):
-        productName = json['productName'],
-        checkedOff  = json['checkedOff']
-    ;
-
-    Map<String, dynamic> toJson() => {
-        'productName' : productName,
-        'checkedOff'  : checkedOff
-    };
-}
-
+// TODO: Can't move AppData to a different file because it will throw errors like 'appdata._storeAppDataToDisk()'' is not defined and such
+// TODO: calling _loadAppDataFromDisk works fine, but the widgets onscreen don't update until some action is performed. boo.
+//
+// AppData is a class that holds important information that is shared across restarts and tabs (both the home, trip and supermarket widgets view the same internal lists)
 class AppData{
     static final AppData _appData = new AppData._internal();
 
-    List _supermarket_order = ["bananas", "bread", "onion", "paprika", "courgette", "eggs"];
+    List supermarketOrder = ["bananas", "bread", "eggs"];
 
-    var _shopping_list = [
-        ShopListEntry(productName: "paprika"),
-        ShopListEntry(productName: "courgette"),
-        ShopListEntry(productName: "onion"),
+    List shopList = [
+        ShopListEntry(productName: "bananas"),
+        ShopListEntry(productName: "eggs"),
+        ShopListEntry(productName: "bread"),
     ];
 
-
     void _storeAppDataToDisk() {
-        String string_to_write = jsonEncode(_shopping_list.map((x) => x.toJson()).toList());
+        String shopListString = jsonEncode(shopList.map((x) => x.toJson()).toList());
         print("###################################################################");
-        print(string_to_write);
-        /* writeContent(string_to_write); */
+        print("Writing to disk:");
+        print(shopListString);
+        writeShopListString(shopListString);
+
+        String supermarketOrderString = jsonEncode(supermarketOrder);
+        print("###################################################################");
+        print("Writing to disk:");
+        print(supermarketOrderString);
+        writeSupermarketOrderString(supermarketOrderString);
+
+    }
+
+    void _loadAppDataFromDisk() {
+        loadShopListString().then((String shopListString) {
+            print("###################################################################");
+            print("Loading from disk:");
+            print(shopListString);
+            shopList = jsonDecode(shopListString).map<ShopListEntry>((x) => ShopListEntry.fromJson(x)).toList();
+        });
+
+        loadSupermarketOrderString().then((String supermarketOrderString) {
+            print("###################################################################");
+            print("Loading from disk:");
+            print(supermarketOrderString);
+            supermarketOrder = jsonDecode(supermarketOrderString);
+        });
     }
 
     factory AppData() {
@@ -88,62 +64,50 @@ class AppData{
 
 }
 
-final appData = AppData();
+// The appData object is a globally available variable
+var appData = AppData();
 
+// the MAIN app (stateless)
 class MyApp extends StatelessWidget {
 
     @override
     Widget build(BuildContext context) {
         return MaterialApp(
             title : 'ShopList',
-            home  : MyStatefulWidget()
+            home  : BottomBarMainBodyWidget()
         );
     }
 }
 
-// This is main widget that holds BottomNavigationBar and determines what is shown in the main body
-class MyStatefulWidget extends StatefulWidget {
-    MyStatefulWidget({Key key}) : super(key: key);
+// Show stuff that's always there; the bottom bar and an open window where the main window will go
+class BottomBarMainBodyWidget extends StatefulWidget {
+    BottomBarMainBodyWidget({Key key}) : super(key: key);
 
     @override
-    _MyStatefulWidgetState createState() => _MyStatefulWidgetState();
+    _BottomBarMainBodyWidgetState createState() => _BottomBarMainBodyWidgetState();
 }
 
-class _MyStatefulWidgetState extends State<MyStatefulWidget> {
+class _BottomBarMainBodyWidgetState extends State<BottomBarMainBodyWidget> {
 
-    // START TEMP
-    // TODO: use this instead of that appdata object?
-    @override
-    void initState() {
-        super.initState();
-        readContent().then((String value) {
-            setState(() {
-                print("##########################################################");
-                print(value);
-                appData._shopping_list = jsonDecode(value).map<ShopListEntry>((x) => ShopListEntry.fromJson(x)).toList();
-            });
-        });
-    }
-    // END TEMP
-
-    int _selectedIndex = 0;
-    static TextStyle optionStyle = TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
+    int _selectedPageIndex = 0;
     List<Widget> _widgetOptions = <Widget>[
-        ShopList(sort_style: "home"),
-        ShopList(sort_style: "supermarket"),
+        ShopList(sort_style: "Home"),
+        ShopList(sort_style: "Trip"),
+        ShopList(sort_style: "Supermarket")
     ];
-
-    void _onItemTapped(int index) {
-        setState(() {
-            _selectedIndex = index;
-        });
-    }
 
     @override
     Widget build(BuildContext context) {
+
+        // TODO: loading appdata works, but it doesn't update the screen until you perform some action
+        setState(() {
+            /* appData._storeAppDataToDisk(); */
+            appData._loadAppDataFromDisk();
+        });
+
         return Scaffold(
             body: Center(
-                child: _widgetOptions.elementAt(_selectedIndex),
+                child: _widgetOptions.elementAt(_selectedPageIndex),
             ),
             bottomNavigationBar: BottomNavigationBar(
                 items: const <BottomNavigationBarItem>[
@@ -153,20 +117,29 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                     ),
                     BottomNavigationBarItem(
                         icon: Icon(Icons.shopping_cart),
+                        label: 'Trip',
+                    ),
+                    BottomNavigationBarItem(
+                        icon: Icon(Icons.apartment),
                         label: 'Supermarket',
                     ),
                 ],
-                currentIndex: _selectedIndex,
+                currentIndex: _selectedPageIndex,
                 selectedItemColor: Colors.amber[800],
-                onTap: _onItemTapped,
+                onTap: (index) {
+                    setState(() {
+                        _selectedPageIndex = index;
+                    });
+                }
             ),
         );
     }
 
 }
 
+// Show the main body; it'll be a list of checkboxtiles that are sorted one way or another
 class ShopList extends StatefulWidget {
-    final String sort_style; // this value here is determined by how you call myWidget=ShopList(sort_style='x')
+    final String sort_style;
 
     ShopList({ Key key, this.sort_style}): super(key: key);
 
@@ -181,38 +154,44 @@ class _ShopListState extends State<ShopList> {
 
         var _list_to_show;
         switch (widget.sort_style) {
-            case "home":
-                _list_to_show = List.from(appData._shopping_list);
+            case "Home":
+                _list_to_show = List.from(appData.shopList);
                 break;
-            case "supermarket":
-                _list_to_show = List.from(appData._shopping_list);
-                _list_to_show.sort((a, b) => appData._supermarket_order.indexOf(reduceProductName(a.productName)) - appData._supermarket_order.indexOf(reduceProductName(b.productName)));
+            case "Trip":
+                _list_to_show = List.from(appData.shopList);
+                _list_to_show.sort((a, b) => appData.supermarketOrder.indexOf(reduceProductName(a.productName)) - appData.supermarketOrder.indexOf(reduceProductName(b.productName)));
+                break;
+            case "Supermarket":
+                _list_to_show = List.from(appData.supermarketOrder);
                 break;
         }
 
-        void _updateMyItems(int oldIndexHome, int newIndexHome) {
-            if ( oldIndexHome != newIndexHome ) {
+        void _updateMyItems(int oldIndex, int newIndex) {
+            if ( oldIndex != newIndex ) {
                 switch (widget.sort_style) {
-                    case "home":
-                        ShopListEntry entry = appData._shopping_list.removeAt(oldIndexHome);
-                        if (oldIndexHome < newIndexHome) newIndexHome -= 1; // removing the item at oldIndex will shorten the list by 1.
-                        appData._shopping_list.insert(newIndexHome, entry);
+                    case "Home":
+                        ShopListEntry entry = appData.shopList.removeAt(oldIndex);
+                        if (oldIndex < newIndex) newIndex -= 1; // removing the item at oldIndex will shorten the list by 1.
+                        appData.shopList.insert(newIndex, entry);
                         break;
-                    case "supermarket":
-                        int oldIndexSupermarket = appData._supermarket_order.indexOf(reduceProductName(_list_to_show[oldIndexHome].productName));
-                        int newIndexSupermarket = (newIndexHome == _list_to_show.length) ? appData._supermarket_order.length : appData._supermarket_order.indexOf(reduceProductName(_list_to_show[newIndexHome].productName));
-                        String reduced_productName = appData._supermarket_order.removeAt(oldIndexSupermarket);
+                    case "Trip":
+                        int oldIndexSupermarket = appData.supermarketOrder.indexOf(reduceProductName(_list_to_show[oldIndex].productName));
+                        int newIndexSupermarket = (newIndex == _list_to_show.length) ? appData.supermarketOrder.length : appData.supermarketOrder.indexOf(reduceProductName(_list_to_show[newIndex].productName));
+                        String reduced_productName = appData.supermarketOrder.removeAt(oldIndexSupermarket);
                         if (oldIndexSupermarket < newIndexSupermarket) newIndexSupermarket -= 1;
-                        appData._supermarket_order.insert(newIndexSupermarket, reduced_productName);
+                        appData.supermarketOrder.insert(newIndexSupermarket, reduced_productName);
+                        break;
+                    case "Supermarket":
+                        String entry = appData.supermarketOrder.removeAt(oldIndex);
+                        if (oldIndex < newIndex) newIndex -= 1;
+                        appData.supermarketOrder.insert(newIndex, entry);
                         break;
                 }
-                appData._storeAppDataToDisk();
             }
         }
 
         return Scaffold(
             appBar: AppBar(
-              /* title: Text("My Shopping List"), */
               title: Text(widget.sort_style),
             ),
             body: ListView(
@@ -223,29 +202,32 @@ class _ShopListState extends State<ShopList> {
                             onReorder: (oldIndex, newIndex) {
                                 setState(() {
                                     _updateMyItems(oldIndex, newIndex);
+                                    appData._storeAppDataToDisk();
                                 });
                             },
                             children: [
-                                for (final entry in _list_to_show) _buildRow(entry)
+                                for (final entry in _list_to_show) (widget.sort_style == "Supermarket") ? _buildRowSupermarket(entry) : _buildRow(entry)
                             ]
                         )
                     ),
                     ListTile(
                         title: TextField(
                             controller: TextEditingController(),
-                            onSubmitted: (entry) {
+                            onSubmitted: (productName) {
                                 setState( () {
-                                    appData._shopping_list.add(ShopListEntry(productName: entry));
-                                    if (!appData._supermarket_order.contains(entry)) {
-                                        appData._supermarket_order.add(entry);
+                                    appData.shopList.add(ShopListEntry(productName: productName));
+                                    String reducedProductName = reduceProductName(productName);
+                                    if (!appData.supermarketOrder.contains(reducedProductName)) {
+                                        appData.supermarketOrder.add(reducedProductName);
                                     }
+                                    appData._storeAppDataToDisk();
                                 });
                             },
                             decoration: new InputDecoration(
                                 border: InputBorder.none,
                                 focusedBorder: InputBorder.none,
                                 contentPadding: EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
-                                hintText: "bananas, eggs, bread...", //'Hold to make new entry...',
+                                hintText: "bananas, eggs, bread...",
                                 hintStyle: TextStyle(color: Colors.grey, fontSize: 10.0)
                             ),
                         ),
@@ -261,19 +243,55 @@ class _ShopListState extends State<ShopList> {
             title: Text(
                 entry.productName,
                 style: TextStyle(
-                    fontSize: 18.0,
+                    fontSize: entry.checkedOff ? 12.0        : 20.0,
                     color   : entry.checkedOff ? Colors.grey : Colors.black
                 )
             ),
             contentPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 16.0),
             dense: true,
-            leading: Icon(Icons.drag_handle),
-            trailing: Icon( entry.checkedOff ? Icons.check_box_outlined : Icons.check_box_outline_blank),
+            leading : IconButton( // TODO: the cross has way too much padding on its left and right, remove it somehow
+                padding: EdgeInsets.all(0.0),
+                icon: Icon(Icons.clear),
+                onPressed: () {
+                    setState( () {
+                        List listOfStrings = appData.shopList.map((x) => x.productName).toList();
+                        appData.shopList.removeAt(listOfStrings.indexOf(entry.productName));
+                        appData._storeAppDataToDisk();
+                    });
+                }
+            ),
+            trailing: Icon(entry.checkedOff ? Icons.check_box_outlined : Icons.check_box_outline_blank),
             onTap: () {
                 setState( () {
                     entry.checkedOff = !entry.checkedOff;
+                    appData._storeAppDataToDisk();
                 });
             }
+        );
+    }
+
+    Widget _buildRowSupermarket(String productName) {
+        return ListTile(
+            key: ValueKey(productName),
+            title: Text(
+                productName,
+                style: TextStyle(
+                    fontSize: 20.0,
+                    color   : Colors.black
+                )
+            ),
+            contentPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 16.0),
+            dense: true,
+            leading : IconButton( // TODO: the cross has way too much padding on its left and right, remove it somehow
+                padding: EdgeInsets.all(0.0),
+                icon: Icon(Icons.clear),
+                onPressed: () {
+                    setState( () {
+                        appData.supermarketOrder.removeAt(appData.supermarketOrder.indexOf(productName));
+                        appData._storeAppDataToDisk();
+                    });
+                }
+            ),
         );
     }
 }
