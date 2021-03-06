@@ -1,3 +1,11 @@
 String reduceProductName(String productName) {
-    return productName.replaceAll("\\d", "").toLowerCase(); // remove numbers and put to lowercase TODO: remove stuff between parentheses
+    productName = productName.replaceAll(RegExp("[0-9]"), "");
+    productName = productName.toLowerCase();
+    int i_start = productName.indexOf("(");
+    int i_end   = productName.indexOf(")");
+    if (i_start > 0 && i_end > 0) {
+        productName = productName.replaceAll(productName.substring(i_start, i_end+1), "");
+    }
+    productName = productName.trim();
+    return productName;
 }

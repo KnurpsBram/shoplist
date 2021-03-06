@@ -99,12 +99,6 @@ class _BottomBarMainBodyWidgetState extends State<BottomBarMainBodyWidget> {
     @override
     Widget build(BuildContext context) {
 
-        // TODO: loading appdata works, but it doesn't update the screen until you perform some action
-        setState(() {
-            /* appData._storeAppDataToDisk(); */
-            appData._loadAppDataFromDisk();
-        });
-
         return Scaffold(
             body: Center(
                 child: _widgetOptions.elementAt(_selectedPageIndex),
@@ -147,6 +141,12 @@ class ShopList extends StatefulWidget {
 }
 
 class _ShopListState extends State<ShopList> {
+
+    @override
+    void initState() {
+        super.initState();
+        appData._loadAppDataFromDisk();
+    }
 
     @override
     Widget build(BuildContext context) {
@@ -216,6 +216,12 @@ class _ShopListState extends State<ShopList> {
                                 setState( () {
                                     appData.shopList.add(ShopListEntry(productName: productName));
                                     String reducedProductName = reduceProductName(productName);
+
+                                    debugPrint("---------------------------------------------------------");
+                                    print("AAPJE");
+                                    print(productName);
+                                    print(reducedProductName);
+
                                     if (!appData.supermarketOrder.contains(reducedProductName)) {
                                         appData.supermarketOrder.add(reducedProductName);
                                     }
