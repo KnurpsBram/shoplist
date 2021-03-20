@@ -23,6 +23,7 @@ class AppData{
         ShopListEntry(productName: "bananas"),
         ShopListEntry(productName: "eggs"),
         ShopListEntry(productName: "bread"),
+        ShopListEntry(productName: ""),
     ];
 
     void _storeAppDataToDisk() {
@@ -145,6 +146,7 @@ class _ShopListState extends State<ShopList> {
     @override
     void initState() {
         super.initState();
+        appData._storeAppDataToDisk();
         appData._loadAppDataFromDisk();
     }
 
@@ -209,49 +211,48 @@ class _ShopListState extends State<ShopList> {
                             ]
                         )
                     ),
-                    ListTile(
-                        title: TextField(
-                            controller: TextEditingController(),
-                            onSubmitted: (productName) {
-                                setState( () {
-                                    appData.shopList.add(ShopListEntry(productName: productName));
-                                    String reducedProductName = reduceProductName(productName);
-
-                                    debugPrint("---------------------------------------------------------");
-                                    print("AAPJE");
-                                    print(productName);
-                                    print(reducedProductName);
-
-                                    if (!appData.supermarketOrder.contains(reducedProductName)) {
-                                        appData.supermarketOrder.add(reducedProductName);
-                                    }
-                                    appData._storeAppDataToDisk();
-                                });
-                            },
-                            decoration: new InputDecoration(
-                                border: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                                contentPadding: EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
-                                hintText: "bananas, eggs, bread...",
-                                hintStyle: TextStyle(color: Colors.grey, fontSize: 10.0)
-                            ),
-                        ),
-                    )
                 ]
             )
         );
     }
 
+
     Widget _buildRow(ShopListEntry entry) {
         return ListTile(
             key: ValueKey(entry.productName),
-            title: Text(
-                entry.productName,
+            title: TextField(
+                controller: TextEditingController(
+                    text: entry.productName,
+                ),
                 style: TextStyle(
                     fontSize: entry.checkedOff ? 12.0        : 20.0,
                     color   : entry.checkedOff ? Colors.grey : Colors.black
-                )
+                ),
+                decoration: new InputDecoration(
+                    border: InputBorder.none,
+                    focusedBorder  : InputBorder.none,
+                    contentPadding : EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+                    hintText       : "tap to create new entry...",
+                    hintStyle      : TextStyle(
+                        fontStyle : FontStyle.italic,
+                        fontSize  : 12.0,
+                        color     : Colors.grey,
+                    )
+                ),
+                onSubmitted: (productName) {
+                    setState( () {
+
+                        entry.productName = productName;
+
+                        var reducedProductNames = appData.shopList.map((x) => x.getReducedProductName()).toList();
+                        if (!reducedProductNames.contains("")) {
+                            appData.shopList.add(ShopListEntry(productName: ""));
+                        }
+
+                    });
+                },
             ),
+
             contentPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 16.0),
             dense: true,
             leading : IconButton( // TODO: the cross has way too much padding on its left and right, remove it somehow
