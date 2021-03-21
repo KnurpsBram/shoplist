@@ -17,13 +17,13 @@ void main() => runApp(MyApp());
 class AppData{
     static final AppData _appData = new AppData._internal();
 
-    List supermarketOrder = ["bananas", "bread", "eggs"];
+    /* List supermarketOrder = ["bananas", "bread", "eggs", ""]; */
 
     List shopList = [
-        ShopListEntry(productName: "bananas"),
-        ShopListEntry(productName: "eggs"),
-        ShopListEntry(productName: "bread"),
-        ShopListEntry(productName: ""),
+        ShopListEntry(productName: "bananas", homeIndex: 0, supermarketIndex: 1),
+        ShopListEntry(productName: "eggs",    homeIndex: 1, supermarketIndex: 3),
+        ShopListEntry(productName: "bread",   homeIndex: 2, supermarketIndex: 2),
+        ShopListEntry(productName: "",        homeIndex: 3, supermarketIndex: 0),
     ];
 
     void _storeAppDataToDisk() {
@@ -33,11 +33,11 @@ class AppData{
         print(shopListString);
         writeShopListString(shopListString);
 
-        String supermarketOrderString = jsonEncode(supermarketOrder);
+        /* String supermarketOrderString = jsonEncode(supermarketOrder);
         print("###################################################################");
         print("Writing to disk:");
         print(supermarketOrderString);
-        writeSupermarketOrderString(supermarketOrderString);
+        writeSupermarketOrderString(supermarketOrderString); */
 
     }
 
@@ -49,12 +49,74 @@ class AppData{
             shopList = jsonDecode(shopListString).map<ShopListEntry>((x) => ShopListEntry.fromJson(x)).toList();
         });
 
-        loadSupermarketOrderString().then((String supermarketOrderString) {
+        /* loadSupermarketOrderString().then((String supermarketOrderString) {
             print("###################################################################");
             print("Loading from disk:");
             print(supermarketOrderString);
             supermarketOrder = jsonDecode(supermarketOrderString);
-        });
+        }); */
+    }
+
+    void _updateHomeIndex(int oldIndex, int newIndex) {
+
+        int index;
+        if        ( oldIndex  < newIndex ) {
+            index = oldIndex;
+        } else if ( oldIndex  > newIndex ) {
+            index = oldIndex + 1;
+        } else if ( oldIndex == newIndex ) {
+            return;
+        }
+
+        for (ShopListEntry entry in this.shopList ) {
+            if ( entry.homeIndex >= newIndex ) {
+                entry.homeIndex += 1;
+            }
+        }
+
+        for (ShopListEntry entry in this.shopList ) {
+            if ( entry.homeIndex == index ) {
+                entry.homeIndex = newIndex;
+            }
+        }
+
+        for (ShopListEntry entry in this.shopList ) {
+            if ( entry.homeIndex > oldIndex ) {
+                entry.homeIndex -= 1;
+            }
+        }
+    }
+
+    // TODO: the functions _updateHomeIndex and _updateSupermarketIndex are practically the same, find a way to remove the redundancy
+    void _updateSupermarketIndex(int oldIndex, int newIndex) {
+
+        int index;
+        if        ( oldIndex  < newIndex ) {
+            index = oldIndex;
+        } else if ( oldIndex  > newIndex ) {
+            index = oldIndex + 1;
+        } else if ( oldIndex == newIndex ) {
+            return;
+        }
+
+        for (ShopListEntry entry in this.shopList ) {
+            if ( entry.supermarketIndex >= newIndex ) {
+                entry.supermarketIndex += 1;
+            }
+        }
+
+        for (ShopListEntry entry in this.shopList ) {
+            if ( entry.supermarketIndex == index ) {
+                entry.supermarketIndex = newIndex;
+            }
+        }
+
+        for (ShopListEntry entry in this.shopList ) {
+            if ( entry.supermarketIndex > oldIndex ) {
+                entry.supermarketIndex -= 1;
+            }
+        }
+
     }
 
     factory AppData() {
@@ -156,14 +218,15 @@ class _ShopListState extends State<ShopList> {
         var _list_to_show;
         switch (widget.sort_style) {
             case "Home":
-                _list_to_show = List.from(appData.shopList);
+                _list_to_show = List.from(appData.shopList); // TODO: only items in shoplist
+                _list_to_show.sort((a, b) => a.homeIndex - b.homeIndex as int);
                 break;
             case "Trip":
-                _list_to_show = List.from(appData.shopList);
-                _list_to_show.sort((a, b) => appData.supermarketOrder.indexOf(reduceProductName(a.productName)) - appData.supermarketOrder.indexOf(reduceProductName(b.productName)));
+                _list_to_show = List.from(appData.shopList); // TODO: only items in shoplist
+                _list_to_show.sort((a, b) => a.supermarketIndex - b.supermarketIndex as int);
                 break;
             case "Supermarket":
-                _list_to_show = List.from(appData.supermarketOrder);
+                /* _list_to_show = List.from(appData.supermarketOrder); */
                 break;
         }
 
@@ -171,21 +234,23 @@ class _ShopListState extends State<ShopList> {
             if ( oldIndex != newIndex ) {
                 switch (widget.sort_style) {
                     case "Home":
-                        ShopListEntry entry = appData.shopList.removeAt(oldIndex);
+                        /* ShopListEntry entry = appData.shopList.removeAt(oldIndex);
                         if (oldIndex < newIndex) newIndex -= 1; // removing the item at oldIndex will shorten the list by 1.
-                        appData.shopList.insert(newIndex, entry);
+                        appData.shopList.insert(newIndex, entry); */
+                        appData._updateHomeIndex(oldIndex, newIndex);
                         break;
                     case "Trip":
-                        int oldIndexSupermarket = appData.supermarketOrder.indexOf(reduceProductName(_list_to_show[oldIndex].productName));
-                        int newIndexSupermarket = (newIndex == _list_to_show.length) ? appData.supermarketOrder.length : appData.supermarketOrder.indexOf(reduceProductName(_list_to_show[newIndex].productName));
+                        /* int oldIndexSupermarket = appData.supermarketOrder.indexOf(_list_to_show[oldIndex].getReducedProductName());
+                        int newIndexSupermarket = (newIndex == _list_to_show.length) ? appData.supermarketOrder.length : appData.supermarketOrder.indexOf(_list_to_show[newIndex]..getReducedProductName());
                         String reduced_productName = appData.supermarketOrder.removeAt(oldIndexSupermarket);
                         if (oldIndexSupermarket < newIndexSupermarket) newIndexSupermarket -= 1;
-                        appData.supermarketOrder.insert(newIndexSupermarket, reduced_productName);
+                        appData.supermarketOrder.insert(newIndexSupermarket, reduced_productName); */
+                        appData._updateSupermarketIndex(oldIndex, newIndex);
                         break;
                     case "Supermarket":
-                        String entry = appData.supermarketOrder.removeAt(oldIndex);
+                        /* String entry = appData.supermarketOrder.removeAt(oldIndex);
                         if (oldIndex < newIndex) newIndex -= 1;
-                        appData.supermarketOrder.insert(newIndex, entry);
+                        appData.supermarketOrder.insert(newIndex, entry); */
                         break;
                 }
             }
@@ -241,9 +306,7 @@ class _ShopListState extends State<ShopList> {
                 ),
                 onSubmitted: (productName) {
                     setState( () {
-
                         entry.productName = productName;
-
                         var reducedProductNames = appData.shopList.map((x) => x.getReducedProductName()).toList();
                         if (!reducedProductNames.contains("")) {
                             appData.shopList.add(ShopListEntry(productName: ""));
@@ -252,7 +315,6 @@ class _ShopListState extends State<ShopList> {
                     });
                 },
             ),
-
             contentPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 16.0),
             dense: true,
             leading : IconButton( // TODO: the cross has way too much padding on its left and right, remove it somehow
@@ -277,7 +339,7 @@ class _ShopListState extends State<ShopList> {
     }
 
     Widget _buildRowSupermarket(String productName) {
-        return ListTile(
+        /* return ListTile(
             key: ValueKey(productName),
             title: Text(
                 productName,
@@ -293,11 +355,14 @@ class _ShopListState extends State<ShopList> {
                 icon: Icon(Icons.clear),
                 onPressed: () {
                     setState( () {
-                        appData.supermarketOrder.removeAt(appData.supermarketOrder.indexOf(productName));
-                        appData._storeAppDataToDisk();
+                        var reducedProductNames = appData.shopList.map((x) => x.getReducedProductName()).toList();
+                        if (!reducedProductNames.contains(productName)) {
+                            appData.supermarketOrder.removeAt(appData.supermarketOrder.indexOf(productName));
+                            appData._storeAppDataToDisk();
+                        }
                     });
                 }
             ),
-        );
+        ); */
     }
 }
