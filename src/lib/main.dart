@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
+import 'dart:math';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
 
@@ -17,12 +18,11 @@ void main() => runApp(MyApp());
 class AppData{
     static final AppData _appData = new AppData._internal();
 
-    List supermarketOrder = ["bananas", "bread", "eggs"];
-
     List shopList = [
-        ShopListEntry(productName: "bananas"),
-        ShopListEntry(productName: "eggs"),
-        ShopListEntry(productName: "bread"),
+        ShopListEntry(productName: "bananas", homeIndex: 0, supermarketIndex: 1),
+        ShopListEntry(productName: "eggs",    homeIndex: 1, supermarketIndex: 3),
+        ShopListEntry(productName: "bread",   homeIndex: 2, supermarketIndex: 2),
+        ShopListEntry(productName: "",        homeIndex: 3, supermarketIndex: 0),
     ];
 
     void _storeAppDataToDisk() {
@@ -31,13 +31,6 @@ class AppData{
         print("Writing to disk:");
         print(shopListString);
         writeShopListString(shopListString);
-
-        String supermarketOrderString = jsonEncode(supermarketOrder);
-        print("###################################################################");
-        print("Writing to disk:");
-        print(supermarketOrderString);
-        writeSupermarketOrderString(supermarketOrderString);
-
     }
 
     void _loadAppDataFromDisk() {
@@ -47,13 +40,68 @@ class AppData{
             print(shopListString);
             shopList = jsonDecode(shopListString).map<ShopListEntry>((x) => ShopListEntry.fromJson(x)).toList();
         });
+    }
 
-        loadSupermarketOrderString().then((String supermarketOrderString) {
-            print("###################################################################");
-            print("Loading from disk:");
-            print(supermarketOrderString);
-            supermarketOrder = jsonDecode(supermarketOrderString);
-        });
+    void _updateHomeIndex(int oldIndex, int newIndex) {
+
+        int index;
+        if        ( oldIndex  < newIndex ) {
+            index = oldIndex;
+        } else if ( oldIndex  > newIndex ) {
+            index = oldIndex + 1;
+        } else if ( oldIndex == newIndex ) {
+            return;
+        }
+
+        for (ShopListEntry entry in this.shopList ) {
+            if ( entry.homeIndex >= newIndex ) {
+                entry.homeIndex += 1;
+            }
+        }
+
+        for (ShopListEntry entry in this.shopList ) {
+            if ( entry.homeIndex == index ) {
+                entry.homeIndex = newIndex;
+            }
+        }
+
+        for (ShopListEntry entry in this.shopList ) {
+            if ( entry.homeIndex > oldIndex ) {
+                entry.homeIndex -= 1;
+            }
+        }
+    }
+
+    // TODO: the functions _updateHomeIndex and _updateSupermarketIndex are practically the same, find a way to remove the redundancy
+    void _updateSupermarketIndex(int oldIndex, int newIndex) {
+
+        int index;
+        if ( oldIndex  < newIndex ) {
+            index = oldIndex;
+        } else if ( oldIndex  > newIndex ) {
+            index = oldIndex + 1;
+        } else if ( oldIndex == newIndex ) {
+            return;
+        }
+
+        for (ShopListEntry entry in this.shopList ) {
+            if ( entry.supermarketIndex >= newIndex ) {
+                entry.supermarketIndex += 1;
+            }
+        }
+
+        for (ShopListEntry entry in this.shopList ) {
+            if ( entry.supermarketIndex == index ) {
+                entry.supermarketIndex = newIndex;
+            }
+        }
+
+        for (ShopListEntry entry in this.shopList ) {
+            if ( entry.supermarketIndex > oldIndex ) {
+                entry.supermarketIndex -= 1;
+            }
+        }
+
     }
 
     factory AppData() {
@@ -145,6 +193,7 @@ class _ShopListState extends State<ShopList> {
     @override
     void initState() {
         super.initState();
+        /* appData._storeAppDataToDisk(); */
         appData._loadAppDataFromDisk();
     }
 
@@ -154,36 +203,39 @@ class _ShopListState extends State<ShopList> {
         var _list_to_show;
         switch (widget.sort_style) {
             case "Home":
-                _list_to_show = List.from(appData.shopList);
+                _list_to_show = List.from(appData.shopList.where((x) => x.inShopList));
+                _list_to_show.sort((a, b) => a.homeIndex - b.homeIndex as int);
                 break;
             case "Trip":
-                _list_to_show = List.from(appData.shopList);
-                _list_to_show.sort((a, b) => appData.supermarketOrder.indexOf(reduceProductName(a.productName)) - appData.supermarketOrder.indexOf(reduceProductName(b.productName)));
+                _list_to_show = List.from(appData.shopList.where((x) => x.inShopList));
+                _list_to_show.sort((a, b) => a.supermarketIndex - b.supermarketIndex as int);
                 break;
             case "Supermarket":
-                _list_to_show = List.from(appData.supermarketOrder);
+                _list_to_show = List.from(appData.shopList);
+                _list_to_show.sort((a, b) => a.supermarketIndex - b.supermarketIndex as int);
                 break;
         }
 
         void _updateMyItems(int oldIndex, int newIndex) {
+
             if ( oldIndex != newIndex ) {
                 switch (widget.sort_style) {
                     case "Home":
-                        ShopListEntry entry = appData.shopList.removeAt(oldIndex);
-                        if (oldIndex < newIndex) newIndex -= 1; // removing the item at oldIndex will shorten the list by 1.
-                        appData.shopList.insert(newIndex, entry);
+                        oldIndex = _list_to_show[oldIndex].homeIndex;
+                        if ( newIndex > oldIndex ) newIndex -= 1; // odd that this is necessary
+                        newIndex = _list_to_show[newIndex].homeIndex;
+                        if ( newIndex > oldIndex ) newIndex += 1;
+                        appData._updateHomeIndex(oldIndex, newIndex);
                         break;
                     case "Trip":
-                        int oldIndexSupermarket = appData.supermarketOrder.indexOf(reduceProductName(_list_to_show[oldIndex].productName));
-                        int newIndexSupermarket = (newIndex == _list_to_show.length) ? appData.supermarketOrder.length : appData.supermarketOrder.indexOf(reduceProductName(_list_to_show[newIndex].productName));
-                        String reduced_productName = appData.supermarketOrder.removeAt(oldIndexSupermarket);
-                        if (oldIndexSupermarket < newIndexSupermarket) newIndexSupermarket -= 1;
-                        appData.supermarketOrder.insert(newIndexSupermarket, reduced_productName);
+                        oldIndex = _list_to_show[oldIndex].supermarketIndex;
+                        if ( newIndex > oldIndex ) newIndex -= 1; // odd that this is necessary
+                        newIndex = _list_to_show[newIndex].supermarketIndex;
+                        if ( newIndex > oldIndex ) newIndex += 1;
+                        appData._updateSupermarketIndex(oldIndex, newIndex);
                         break;
                     case "Supermarket":
-                        String entry = appData.supermarketOrder.removeAt(oldIndex);
-                        if (oldIndex < newIndex) newIndex -= 1;
-                        appData.supermarketOrder.insert(newIndex, entry);
+                        appData._updateSupermarketIndex(oldIndex, newIndex);
                         break;
                 }
             }
@@ -196,7 +248,7 @@ class _ShopListState extends State<ShopList> {
             body: ListView(
                 children: <Widget>[
                     Container(
-                        height: MediaQuery.of(context).size.height - 210, // TODO: make depend on the height of the body of the scaffold, not that of the entire screen
+                        height: MediaQuery.of(context).size.height,
                         child: ReorderableListView(
                             onReorder: (oldIndex, newIndex) {
                                 setState(() {
@@ -209,48 +261,43 @@ class _ShopListState extends State<ShopList> {
                             ]
                         )
                     ),
-                    ListTile(
-                        title: TextField(
-                            controller: TextEditingController(),
-                            onSubmitted: (productName) {
-                                setState( () {
-                                    appData.shopList.add(ShopListEntry(productName: productName));
-                                    String reducedProductName = reduceProductName(productName);
-
-                                    debugPrint("---------------------------------------------------------");
-                                    print("AAPJE");
-                                    print(productName);
-                                    print(reducedProductName);
-
-                                    if (!appData.supermarketOrder.contains(reducedProductName)) {
-                                        appData.supermarketOrder.add(reducedProductName);
-                                    }
-                                    appData._storeAppDataToDisk();
-                                });
-                            },
-                            decoration: new InputDecoration(
-                                border: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                                contentPadding: EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
-                                hintText: "bananas, eggs, bread...",
-                                hintStyle: TextStyle(color: Colors.grey, fontSize: 10.0)
-                            ),
-                        ),
-                    )
                 ]
             )
         );
     }
 
+
     Widget _buildRow(ShopListEntry entry) {
         return ListTile(
             key: ValueKey(entry.productName),
-            title: Text(
-                entry.productName,
+            title: TextField(
+                controller: TextEditingController(
+                    text: entry.productName,
+                ),
                 style: TextStyle(
                     fontSize: entry.checkedOff ? 12.0        : 20.0,
                     color   : entry.checkedOff ? Colors.grey : Colors.black
-                )
+                ),
+                decoration: new InputDecoration(
+                    border: InputBorder.none,
+                    focusedBorder  : InputBorder.none,
+                    contentPadding : EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+                    hintText       : "tap to create new entry...",
+                    hintStyle      : TextStyle(
+                        fontStyle : FontStyle.italic,
+                        fontSize  : 12.0,
+                        color     : Colors.grey,
+                    )
+                ),
+                onSubmitted: (productName) {
+                    setState( () {
+                        entry.productName = productName;
+                        var reducedProductNames = appData.shopList.map((x) => x.getReducedProductName()).toList();
+                        if (!reducedProductNames.contains("")) {
+                            appData.shopList.add(ShopListEntry(productName: "", homeIndex: appData.shopList.length, supermarketIndex:appData.shopList.length));
+                        }
+                    });
+                },
             ),
             contentPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 16.0),
             dense: true,
@@ -259,8 +306,7 @@ class _ShopListState extends State<ShopList> {
                 icon: Icon(Icons.clear),
                 onPressed: () {
                     setState( () {
-                        List listOfStrings = appData.shopList.map((x) => x.productName).toList();
-                        appData.shopList.removeAt(listOfStrings.indexOf(entry.productName));
+                        entry.inShopList = false;
                         appData._storeAppDataToDisk();
                     });
                 }
@@ -275,15 +321,38 @@ class _ShopListState extends State<ShopList> {
         );
     }
 
-    Widget _buildRowSupermarket(String productName) {
+    Widget _buildRowSupermarket(ShopListEntry entry) {
         return ListTile(
-            key: ValueKey(productName),
-            title: Text(
-                productName,
+            key: ValueKey(entry.productName),
+            title: TextField(
+                controller: TextEditingController(
+                    text: entry.productName,
+                ),
                 style: TextStyle(
                     fontSize: 20.0,
                     color   : Colors.black
-                )
+                ),
+                decoration: new InputDecoration(
+                    border: InputBorder.none,
+                    focusedBorder  : InputBorder.none,
+                    contentPadding : EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+                    hintText       : "tap to create new entry...",
+                    hintStyle      : TextStyle(
+                        fontStyle : FontStyle.italic,
+                        fontSize  : 12.0,
+                        color     : Colors.grey,
+                    )
+                ),
+                onSubmitted: (productName) {
+                    setState( () {
+                        entry.productName = productName;
+                        var reducedProductNames = appData.shopList.map((x) => x.getReducedProductName()).toList();
+                        if (!reducedProductNames.contains("")) {
+                            appData.shopList.add(ShopListEntry(productName: "", homeIndex: appData.shopList.length, supermarketIndex:appData.shopList.length));
+                        }
+
+                    });
+                },
             ),
             contentPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 16.0),
             dense: true,
@@ -292,7 +361,15 @@ class _ShopListState extends State<ShopList> {
                 icon: Icon(Icons.clear),
                 onPressed: () {
                     setState( () {
-                        appData.supermarketOrder.removeAt(appData.supermarketOrder.indexOf(productName));
+                        for (ShopListEntry entry_ in appData.shopList ) {
+                            if ( entry_.homeIndex > entry.homeIndex ) {
+                                entry_.homeIndex -= 1;
+                            }
+                            if ( entry_.supermarketIndex > entry.supermarketIndex ) {
+                                entry_.supermarketIndex -= 1;
+                            }
+                        }
+                        appData.shopList.removeAt(appData.shopList.indexOf(entry));
                         appData._storeAppDataToDisk();
                     });
                 }

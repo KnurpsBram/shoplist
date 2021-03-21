@@ -4,19 +4,33 @@ import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
 
-class ShopListEntry{
-    final String productName;
-    bool checkedOff;
+import 'util.dart';
 
-    ShopListEntry({ @required this.productName, this.checkedOff=false});
+class ShopListEntry{
+    String productName;
+    bool inShopList;
+    bool checkedOff;
+    int  homeIndex;
+    int  supermarketIndex;
+
+    ShopListEntry({@required this.productName, this.inShopList=true, this.checkedOff=false, this.homeIndex=-1, this.supermarketIndex=-1});
+
+    String getReducedProductName() => reduceProductName(productName);
 
     ShopListEntry.fromJson(Map<String, dynamic> json):
-        productName = json['productName'],
-        checkedOff  = json['checkedOff']
+        productName      = json['productName'],
+        inShopList       = json['inShopList'],
+        checkedOff       = json['checkedOff'],
+        homeIndex        = json['homeIndex'],
+        supermarketIndex = json['supermarketIndex']
     ;
 
     Map<String, dynamic> toJson() => {
-        'productName' : productName,
-        'checkedOff'  : checkedOff
+        'productName'      : productName,
+        'inShopList'       : inShopList,
+        'checkedOff'       : checkedOff,
+        'homeIndex'        : homeIndex,
+        'supermarketIndex' : supermarketIndex,
     };
+
 }
