@@ -245,22 +245,15 @@ class _ShopListState extends State<ShopList> {
             appBar: AppBar(
               title: Text(widget.sort_style),
             ),
-            body: ListView(
-                children: <Widget>[
-                    Container(
-                        height: MediaQuery.of(context).size.height,
-                        child: ReorderableListView(
-                            onReorder: (oldIndex, newIndex) {
-                                setState(() {
-                                    _updateMyItems(oldIndex, newIndex);
-                                    appData._storeAppDataToDisk();
-                                });
-                            },
-                            children: [
-                                for (final entry in _list_to_show) (widget.sort_style == "Supermarket") ? _buildRowSupermarket(entry) : _buildRow(entry)
-                            ]
-                        )
-                    ),
+            body: ReorderableListView(
+                onReorder: (oldIndex, newIndex) {
+                    setState(() {
+                        _updateMyItems(oldIndex, newIndex);
+                        appData._storeAppDataToDisk();
+                    });
+                },
+                children: [
+                    for (final entry in _list_to_show) (widget.sort_style == "Supermarket") ? _buildRowSupermarket(entry) : _buildRow(entry)
                 ]
             )
         );
