@@ -289,6 +289,7 @@ class _ShopListState extends State<ShopList> {
                         if (!reducedProductNames.contains("")) {
                             appData.shopList.add(ShopListEntry(productName: "", homeIndex: appData.shopList.length, supermarketIndex:appData.shopList.length));
                         }
+                        appData._storeAppDataToDisk();
                     });
                 },
             ),
@@ -343,7 +344,7 @@ class _ShopListState extends State<ShopList> {
                         if (!reducedProductNames.contains("")) {
                             appData.shopList.add(ShopListEntry(productName: "", homeIndex: appData.shopList.length, supermarketIndex:appData.shopList.length));
                         }
-
+                        appData._storeAppDataToDisk();
                     });
                 },
             ),

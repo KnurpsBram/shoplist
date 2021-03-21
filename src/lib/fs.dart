@@ -9,12 +9,7 @@ Future<String> get _localPath async {
 
 Future<File> get _shopListFile async {
     final path = await _localPath;
-    return File('$path/shoplist.json');
-}
-
-Future<File> get _supermarketOrderFile async {
-    final path = await _localPath;
-    return File('$path/supermarketorder.json');
+    return File('$path/shoplist_v2.json');
 }
 
 Future<File> writeShopListString(String stringToWrite) async {
@@ -22,19 +17,8 @@ Future<File> writeShopListString(String stringToWrite) async {
     return file.writeAsString(stringToWrite);
 }
 
-Future<File> writeSupermarketOrderString(String stringToWrite) async {
-    final file = await _supermarketOrderFile;
-    return file.writeAsString(stringToWrite);
-}
-
 Future<String> loadShopListString() async {
     final file = await _shopListFile;
-    String stringFromFile = await file.readAsString();
-    return stringFromFile;
-}
-
-Future<String> loadSupermarketOrderString() async {
-    final file = await _supermarketOrderFile;
     String stringFromFile = await file.readAsString();
     return stringFromFile;
 }
