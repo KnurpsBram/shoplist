@@ -13,16 +13,21 @@ void main() => runApp(MyApp());
 
 // TODO: Can't move AppData to a different file because it will throw errors like 'appdata._storeAppDataToDisk()'' is not defined and such
 // TODO: calling _loadAppDataFromDisk works fine, but the widgets onscreen don't update until some action is performed. boo.
-//
+
 // AppData is a class that holds important information that is shared across restarts and tabs (both the home, trip and supermarket widgets view the same internal lists)
 class AppData{
     static final AppData _appData = new AppData._internal();
 
     List shopList = [
-        ShopListEntry(productName: "bananas", homeIndex: 0, supermarketIndex: 1),
-        ShopListEntry(productName: "eggs",    homeIndex: 1, supermarketIndex: 3),
-        ShopListEntry(productName: "bread",   homeIndex: 2, supermarketIndex: 2),
-        ShopListEntry(productName: "",        homeIndex: 3, supermarketIndex: 0),
+        /* TODO: make header type that only shows in home list with bold type (and grey background?) */
+        /* ShopListHeader(headerName: "Monday"). */
+        ShopListEntry(productName: "bananas",      homeIndex: 0, supermarketIndex: 1),
+        ShopListEntry(productName: "eggs",         homeIndex: 1, supermarketIndex: 3),
+        /* ShopListHeader(headerName: "Tuesday"). */
+        ShopListEntry(productName: "bread",        homeIndex: 2, supermarketIndex: 2),
+        /* ShopListHeader(headerName: "Other stuff"). */
+        ShopListEntry(productName: "toilet paper", homeIndex: 3, supermarketIndex: 2),
+        ShopListEntry(productName: "",             homeIndex: 4, supermarketIndex: 0),
     ];
 
     void _storeAppDataToDisk() {
@@ -41,6 +46,9 @@ class AppData{
             shopList = jsonDecode(shopListString).map<ShopListEntry>((x) => ShopListEntry.fromJson(x)).toList();
         });
     }
+
+    List _productNames() => shopList.map((x) => x.productName).toList();
+    List _reducedProductNames() => shopList.map((x) => x.getReducedProductName()).toList();
 
     void _updateHomeIndex(int oldIndex, int newIndex) {
 
@@ -178,6 +186,13 @@ class _BottomBarMainBodyWidgetState extends State<BottomBarMainBodyWidget> {
     }
 }
 
+void addEmptyEntryToShopList() {
+  /* The empty entry is also the tile in the list that the user uses to make new entries */
+  if (!appData._reducedProductNames().contains("")) {
+      appData.shopList.add(ShopListEntry(productName: "", homeIndex: appData.shopList.length, supermarketIndex:appData.shopList.length));
+  }
+}
+
 // Show the main body; it'll be a list of checkboxtiles that are sorted one way or another
 class ShopList extends StatefulWidget {
     final String sort_style;
@@ -284,12 +299,12 @@ class _ShopListState extends State<ShopList> {
                 ),
                 onSubmitted: (productName) {
                     setState( () {
+                      // TODO; allow adding duplicate productName; it should appear twice in homelist and triplist, but only once in supermarket order. Perhaps we need a randomly generated uuid as ValueKey
+                      if (!appData._productNames().contains(productName)) {
                         entry.productName = productName;
-                        var reducedProductNames = appData.shopList.map((x) => x.getReducedProductName()).toList();
-                        if (!reducedProductNames.contains("")) {
-                            appData.shopList.add(ShopListEntry(productName: "", homeIndex: appData.shopList.length, supermarketIndex:appData.shopList.length));
-                        }
+                        addEmptyEntryToShopList();
                         appData._storeAppDataToDisk();
+                      }
                     });
                 },
             ),
@@ -320,7 +335,7 @@ class _ShopListState extends State<ShopList> {
             key: ValueKey(entry.productName),
             title: TextField(
                 controller: TextEditingController(
-                    text: entry.productName,
+                    text: entry.getReducedProductName()
                 ),
                 style: TextStyle(
                     fontSize: 20.0,
@@ -339,12 +354,13 @@ class _ShopListState extends State<ShopList> {
                 ),
                 onSubmitted: (productName) {
                     setState( () {
-                        entry.productName = productName;
-                        var reducedProductNames = appData.shopList.map((x) => x.getReducedProductName()).toList();
-                        if (!reducedProductNames.contains("")) {
-                            appData.shopList.add(ShopListEntry(productName: "", homeIndex: appData.shopList.length, supermarketIndex:appData.shopList.length));
+                        /* TODO: if you change the productName to something that's already there, no action is taken, make a pop-up informing the user that this entry is already in the list */
+                        if (!appData._reducedProductNames().contains(productName)) {
+                          entry.productName = productName;
+                          entry.inShopList = false;
+                          addEmptyEntryToShopList();
+                          appData._storeAppDataToDisk();
                         }
-                        appData._storeAppDataToDisk();
                     });
                 },
             ),
