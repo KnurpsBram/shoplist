@@ -20,14 +20,15 @@ class AppData{
 
     List shopList = [
         /* TODO: make header type that only shows in home list with bold type (and grey background?) */
-        /* ShopListHeader(headerName: "Monday"). */
-        ShopListEntry(productName: "bananas",      homeIndex: 0, supermarketIndex: 1),
-        ShopListEntry(productName: "eggs",         homeIndex: 1, supermarketIndex: 3),
+        ShopListEntry(productName: "Monday",       homeIndex: 0, isHeader: true),
+        ShopListEntry(productName: "bananas",      homeIndex: 1, supermarketIndex: 1),
+        ShopListEntry(productName: "eggs",         homeIndex: 2, supermarketIndex: 3),
         /* ShopListHeader(headerName: "Tuesday"). */
-        ShopListEntry(productName: "bread",        homeIndex: 2, supermarketIndex: 2),
+        ShopListEntry(productName: "bread",        homeIndex: 3, supermarketIndex: 2),
         /* ShopListHeader(headerName: "Other stuff"). */
-        ShopListEntry(productName: "toilet paper", homeIndex: 3, supermarketIndex: 2),
-        ShopListEntry(productName: "",             homeIndex: 4, supermarketIndex: 0),
+        ShopListEntry(productName: "toilet paper", homeIndex: 4, supermarketIndex: 2),
+        ShopListEntry(productName: "", homeIndex: 5, isHeader: true, isHeaderInputField: true),
+        ShopListEntry(productName: "", homeIndex: 6, isEntryInputField: true),
     ];
 
     void _storeAppDataToDisk() {
@@ -35,16 +36,25 @@ class AppData{
         print("###################################################################");
         print("Writing to disk:");
         print(shopListString);
+        jsonPrettyPrint(shopList.map((x) => x.toJson()).toList());
         writeShopListString(shopListString);
     }
 
+    bool _hasHeaderInputField() {
+      return (shopList.map((x) => x.isHeaderInputField).toList()).contains(true);
+    }
+
+    bool _hasEntryInputField() {
+      return (shopList.map((x) => x.isEntryInputField).toList()).contains(true);
+    }
+
     void _loadAppDataFromDisk() {
-        loadShopListString().then((String shopListString) {
+        /* loadShopListString().then((String shopListString) {
             print("###################################################################");
             print("Loading from disk:");
             print(shopListString);
             shopList = jsonDecode(shopListString).map<ShopListEntry>((x) => ShopListEntry.fromJson(x)).toList();
-        });
+        }); */
     }
 
     List _productNames() => shopList.map((x) => x.productName).toList();
@@ -188,8 +198,11 @@ class _BottomBarMainBodyWidgetState extends State<BottomBarMainBodyWidget> {
 
 void addEmptyEntryToShopList() {
   /* The empty entry is also the tile in the list that the user uses to make new entries */
-  if (!appData._reducedProductNames().contains("")) {
-      appData.shopList.add(ShopListEntry(productName: "", homeIndex: appData.shopList.length, supermarketIndex:appData.shopList.length));
+  if (!appData._hasHeaderInputField()) {
+    appData.shopList.add(ShopListEntry(isHeaderInputField: true, isHeader: true, productName: "", homeIndex: appData.shopList.length));
+  }
+  if (!appData._hasEntryInputField()) {
+    appData.shopList.add(ShopListEntry(isEntryInputField: true, productName: "", homeIndex: appData.shopList.length, supermarketIndex: appData.shopList.length));
   }
 }
 
@@ -222,11 +235,11 @@ class _ShopListState extends State<ShopList> {
                 _list_to_show.sort((a, b) => a.homeIndex - b.homeIndex as int);
                 break;
             case "Trip":
-                _list_to_show = List.from(appData.shopList.where((x) => x.inShopList));
+                _list_to_show = List.from(appData.shopList.where((x) => (x.inShopList & !x.isHeader)));
                 _list_to_show.sort((a, b) => a.supermarketIndex - b.supermarketIndex as int);
                 break;
             case "Supermarket":
-                _list_to_show = List.from(appData.shopList);
+                _list_to_show = List.from(appData.shopList.where((x) => !x.isHeader));
                 _list_to_show.sort((a, b) => a.supermarketIndex - b.supermarketIndex as int);
                 break;
         }
@@ -274,23 +287,24 @@ class _ShopListState extends State<ShopList> {
         );
     }
 
-
     Widget _buildRow(ShopListEntry entry) {
         return ListTile(
-            key: ValueKey(entry.productName),
+            key: ValueKey(entry.productName + entry.isHeader.toString() + entry.isEntryInputField.toString() + entry.isHeaderInputField.toString()),
+            tileColor: entry.isHeader ? Colors.grey : null,
             title: TextField(
                 controller: TextEditingController(
                     text: entry.productName,
                 ),
                 style: TextStyle(
-                    fontSize: entry.checkedOff ? 12.0        : 20.0,
-                    color   : entry.checkedOff ? Colors.grey : Colors.black
+                    fontWeight : entry.isHeader   ? FontWeight.bold : FontWeight.normal,
+                    fontSize   : entry.checkedOff ? 12.0            : 20.0,
+                    color      : entry.checkedOff ? Colors.grey     : Colors.black
                 ),
                 decoration: new InputDecoration(
                     border: InputBorder.none,
                     focusedBorder  : InputBorder.none,
                     contentPadding : EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
-                    hintText       : "tap to create new entry...",
+                    hintText       : entry.hintText(),
                     hintStyle      : TextStyle(
                         fontStyle : FontStyle.italic,
                         fontSize  : 12.0,
@@ -302,6 +316,8 @@ class _ShopListState extends State<ShopList> {
                       // TODO; allow adding duplicate productName; it should appear twice in homelist and triplist, but only once in supermarket order. Perhaps we need a randomly generated uuid as ValueKey
                       if (!appData._productNames().contains(productName)) {
                         entry.productName = productName;
+                        entry.isEntryInputField = false;
+                        entry.isHeaderInputField = false;
                         addEmptyEntryToShopList();
                         appData._storeAppDataToDisk();
                       }
@@ -332,7 +348,7 @@ class _ShopListState extends State<ShopList> {
 
     Widget _buildRowSupermarket(ShopListEntry entry) {
         return ListTile(
-            key: ValueKey(entry.productName),
+            key: ValueKey(entry.productName + entry.isHeader.toString() + entry.isEntryInputField.toString() + entry.isHeaderInputField.toString()), // TODO: find a better way to generate a unique identifier (uuid package)
             title: TextField(
                 controller: TextEditingController(
                     text: entry.getReducedProductName()
@@ -345,7 +361,7 @@ class _ShopListState extends State<ShopList> {
                     border: InputBorder.none,
                     focusedBorder  : InputBorder.none,
                     contentPadding : EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
-                    hintText       : "tap to create new entry...",
+                    hintText       : entry.hintText(),
                     hintStyle      : TextStyle(
                         fontStyle : FontStyle.italic,
                         fontSize  : 12.0,
@@ -358,6 +374,8 @@ class _ShopListState extends State<ShopList> {
                         if (!appData._reducedProductNames().contains(productName)) {
                           entry.productName = productName;
                           entry.inShopList = false;
+                          entry.isEntryInputField = false;
+                          entry.isHeaderInputField = false;
                           addEmptyEntryToShopList();
                           appData._storeAppDataToDisk();
                         }

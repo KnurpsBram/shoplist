@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 String reduceProductName(String productName) {
     productName = productName.replaceAll(RegExp("[0-9]"), "");
     productName = productName.toLowerCase();
@@ -8,4 +10,10 @@ String reduceProductName(String productName) {
     }
     productName = productName.trim();
     return productName;
+}
+
+void jsonPrettyPrint( dynamic json ) {
+    JsonEncoder encoder = new JsonEncoder.withIndent('  ');
+    String prettyprint = encoder.convert(json);
+    print(prettyprint);
 }
