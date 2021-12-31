@@ -6,6 +6,60 @@ import 'package:flutter/material.dart';
 
 import 'util.dart';
 
+// TODO: save classname (ProductEntry vs HeaderEntry) in json too
+class Entry {
+  bool isEntry;
+
+  Entry({this.isEntry=true});
+  /* Entry.fromJson(Map<String, dynamic> json):
+    if json['classType'] == "ProductEntry" {
+        ProductEntry.fromJson()
+      } */
+}
+
+class ProductEntry extends Entry {
+  String text;
+  bool isCheckedOff;
+
+  ProductEntry({@required this.text, this.isCheckedOff=false});
+
+  ProductEntry.fromJson(Map<String, dynamic> json):
+      text         = json['text'],
+      isCheckedOff = json['isCheckedOff']
+  ;
+
+  Map<String, dynamic> toJson() => {
+      'text'         : text,
+      'isCheckedOff' : isCheckedOff,
+  };
+}
+
+class ProductEntryField extends Entry {
+  String hintText;
+  ProductEntryField({this.hintText="tap to create a new product entry..."});
+
+  Map<String, dynamic> toJson() => {};
+
+}
+
+class HeaderEntry extends Entry {
+  String text;
+
+  HeaderEntry({@required this.text});
+
+  HeaderEntry.fromJson(Map<String, dynamic> json): text = json['text'];
+
+  Map<String, dynamic> toJson() => {'text': text};
+}
+
+class HeaderEntryField extends Entry {
+  String hintText;
+  HeaderEntryField({this.hintText="tap to create a new header..."});
+
+  Map<String, dynamic> toJson() => {};
+
+}
+
 /* class Entry {
   String text;
   Entry({this.text=""})
