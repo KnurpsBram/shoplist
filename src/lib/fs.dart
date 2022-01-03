@@ -12,12 +12,12 @@ Future<File> get _shopListFile async {
     return File('$path/shoplist_v2.json');
 }
 
-Future<File> writeShopListString(String stringToWrite) async {
+Future<File> writeAppDataString(String stringToWrite) async {
     final file = await _shopListFile;
     return file.writeAsString(stringToWrite);
 }
 
-Future<String> loadShopListString() async {
+Future<String> loadAppDataString() async {
     final file = await _shopListFile;
     String stringFromFile = await file.readAsString();
     return stringFromFile;
