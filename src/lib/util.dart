@@ -17,3 +17,11 @@ void jsonPrettyPrint( dynamic json ) {
     String prettyprint = encoder.convert(json);
     print(prettyprint);
 }
+
+List reOrderList ( List myList, int oldIndex, int newIndex ) {
+  if (oldIndex < newIndex) {
+    newIndex -= 1;
+  }
+  myList.insert(newIndex, myList.removeAt(oldIndex));
+  return myList;
+}
