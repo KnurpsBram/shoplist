@@ -223,8 +223,8 @@ class _HomeListState extends State<HomeList> {
                 text: entry.text,
             ),
             style: TextStyle(
-                fontSize   : entry.isCheckedOff ? 12.0        : 20.0,
-                color      : entry.isCheckedOff ? Colors.grey : Colors.black
+                fontSize: 20.0,
+                color: entry.isCheckedOff ? Colors.grey[350] : Colors.black
             ),
             decoration: new InputDecoration(
                 border: InputBorder.none,
@@ -464,8 +464,8 @@ class _TripListState extends State<TripList> {
                 text: entry.text,
             ),
             style: TextStyle(
-                fontSize   : entry.isCheckedOff ? 12.0        : 20.0,
-                color      : entry.isCheckedOff ? Colors.grey : Colors.black
+                fontSize: 20.0,
+                color: entry.isCheckedOff ? Colors.grey[350] : Colors.black
             ),
             decoration: new InputDecoration(
                 border: InputBorder.none,
@@ -509,7 +509,6 @@ class _TripListState extends State<TripList> {
         );
     }
 }
-
 
 //
 // SUPERMARKET LIST
