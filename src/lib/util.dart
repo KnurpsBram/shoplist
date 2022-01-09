@@ -1,13 +1,9 @@
 import 'dart:convert';
 
 String reduceProductName(String productName) {
-    productName = productName.replaceAll(RegExp("[0-9]"), "");
     productName = productName.toLowerCase();
-    int i_start = productName.indexOf("(");
-    int i_end   = productName.indexOf(")");
-    if (i_start > 0 && i_end > 0) {
-        productName = productName.replaceAll(productName.substring(i_start, i_end+1), "");
-    }
+    productName = productName.replaceAll(RegExp('\\(.*?\\)'), ''); // ignore everything between parentheses
+    productName = productName.replaceAll(RegExp("[^a-z]"), ""); // only letters, no numbers no symbols
     productName = productName.trim();
     return productName;
 }

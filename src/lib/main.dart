@@ -34,7 +34,7 @@ class AppData{
     /// The name is not the uuid, because the user might enter 'tomatoes' twice, for example
     /// In the supermarketOrder the name can be the uuid, because we won't allow adding the same entry twice there
 
-    // TODO: Can't move AppData to a different file because it will throw errors like 'appdata.store()'' is not defined and such
+    // TODO: Can't move AppData to a different file because it will throw errors like 'appdata.store()' is not defined and such
 
     static final AppData _appData = new AppData._internal();
 
@@ -71,21 +71,19 @@ class AppData{
       };
     }
 
-    void store() {
-        print("###################################################################");
-        print("Writing to disk:");
+    Future<void> store() async {
         Map<String, dynamic> json = toJson();
-        jsonPrettyPrint(json); // for debugging
+        // jsonPrettyPrint(json); // for debugging
         writeAppDataString(jsonEncode(json));
+        print("Done writing appData to disk");
     }
 
-    void load() {
-        loadAppDataString().then((String jsonString) {
+    Future<void> load() async {
+        return loadAppDataString().then((String jsonString) {
             Map<String, dynamic> json = jsonDecode(jsonString);
-            print("###################################################################");
-            print("Loading from disk:");
-            jsonPrettyPrint(json); // for debugging
+            // jsonPrettyPrint(json); // for debugging
             fromJson(json);
+            print("Done loading appData from disk");
         });
     }
 
@@ -190,7 +188,9 @@ class _HomeListState extends State<HomeList> {
     @override
     void initState() {
         super.initState();
-        appData.load();
+        appData.load().whenComplete(() {
+          setState(() {});
+        });
     }
 
     @override
@@ -223,8 +223,8 @@ class _HomeListState extends State<HomeList> {
                 text: entry.text,
             ),
             style: TextStyle(
-                fontSize   : entry.isCheckedOff ? 12.0        : 20.0,
-                color      : entry.isCheckedOff ? Colors.grey : Colors.black
+                fontSize: 20.0,
+                color: entry.isCheckedOff ? Colors.grey[350] : Colors.black
             ),
             decoration: new InputDecoration(
                 border: InputBorder.none,
@@ -243,7 +243,6 @@ class _HomeListState extends State<HomeList> {
                         appData.homeList.indexWhere((ele) => ele is ProductInputField), // oldIndex
                         appData.homeList.indexOf(entry) + 1 // newIndex
                     );
-                    appData.homeList = reOrderList(appData.homeList, appData.homeList.indexWhere((ele) => ele is ProductInputField), appData.homeList.indexOf(entry) + 1);
                     appData.store();
                 });
             },
@@ -292,7 +291,7 @@ class _HomeListState extends State<HomeList> {
             decoration: new InputDecoration(
                 border: InputBorder.none,
                 focusedBorder  : InputBorder.none,
-                contentPadding : EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+                contentPadding : EdgeInsets.only(left: -10, bottom: 0, top: 0, right: 0),
                 hintText       : "tap to add new item",
                 hintStyle      : TextStyle(
                     fontStyle : FontStyle.italic,
@@ -313,10 +312,26 @@ class _HomeListState extends State<HomeList> {
           ),
           contentPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 16.0),
           dense: true,
-          leading : IconButton(
-            padding: EdgeInsets.all(4.0),
-            constraints: BoxConstraints(),
-            icon: Icon(Icons.dehaze),
+          leading : Wrap(
+            children: <Widget>[
+              IconButton(
+                padding: EdgeInsets.all(4.0),
+                constraints: BoxConstraints(),
+                icon: Icon(Icons.dehaze),
+              ),
+              IconButton(
+                  padding: EdgeInsets.all(4.0),
+                  constraints: BoxConstraints(),
+                  icon: Icon(Icons.clear),
+                  onPressed: () {
+                      setState( () {
+                          appData.homeList.remove(entry);
+                          appData.homeList.add(entry); // this adds it at the end
+                          appData.store();
+                      });
+                  }
+              ),
+            ],
           ),
         );
       } else if (entry is HeaderEntry) {
@@ -338,6 +353,11 @@ class _HomeListState extends State<HomeList> {
             onSubmitted: (headerName) {
                 setState( () {
                     entry.text = headerName;
+                    appData.homeList = reOrderList( // move the productInputField to below the field that just got something submitted; that's where the user is now looking
+                        appData.homeList,
+                        appData.homeList.indexWhere((ele) => ele is ProductInputField), // oldIndex
+                        appData.homeList.indexOf(entry) + 1 // newIndex
+                    );
                     appData.store();
                 });
             },
@@ -376,7 +396,7 @@ class _HomeListState extends State<HomeList> {
             decoration: new InputDecoration(
                 border: InputBorder.none,
                 focusedBorder  : InputBorder.none,
-                contentPadding : EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+                contentPadding : EdgeInsets.only(left: -10, bottom: 0, top: 0, right: 0),
                 hintText       : "tap to add new header",
                 hintStyle      : TextStyle(
                     fontWeight: FontWeight.bold,
@@ -387,16 +407,37 @@ class _HomeListState extends State<HomeList> {
             onSubmitted: (text) {
                 setState( () {
                     appData.homeList.insert(appData.homeList.indexOf(entry), HeaderEntry(id: Uuid().v1(), text: text));
+                    appData.homeList = reOrderList( // move the productInputField to below the field that just got something submitted; that's where the user is now looking
+                        appData.homeList,
+                        appData.homeList.indexWhere((ele) => ele is ProductInputField), // oldIndex
+                        appData.homeList.indexOf(entry) // newIndex
+                    );
                     appData.store();
                 });
             },
           ),
           contentPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 16.0),
           dense: true,
-          leading : IconButton(
-            padding: EdgeInsets.all(4.0),
-            constraints: BoxConstraints(),
-            icon: Icon(Icons.dehaze),
+          leading : Wrap(
+            children: <Widget>[
+              IconButton(
+                padding: EdgeInsets.all(4.0),
+                constraints: BoxConstraints(),
+                icon: Icon(Icons.dehaze),
+              ),
+              IconButton(
+                  padding: EdgeInsets.all(4.0),
+                  constraints: BoxConstraints(),
+                  icon: Icon(Icons.clear),
+                  onPressed: () {
+                      setState( () {
+                          appData.homeList.remove(entry);
+                          appData.homeList.add(entry); // this adds it at the end
+                          appData.store();
+                      });
+                  }
+              ),
+            ],
           ),
         );
       } else {
@@ -433,7 +474,9 @@ class _TripListState extends State<TripList> {
     @override
     void initState() {
         super.initState();
-        appData.load();
+        appData.load().whenComplete(() {
+          setState(() {});
+        });
     }
 
     @override
@@ -462,8 +505,8 @@ class _TripListState extends State<TripList> {
                 text: entry.text,
             ),
             style: TextStyle(
-                fontSize   : entry.isCheckedOff ? 12.0        : 20.0,
-                color      : entry.isCheckedOff ? Colors.grey : Colors.black
+                fontSize: 20.0,
+                color: entry.isCheckedOff ? Colors.grey[350] : Colors.black
             ),
             decoration: new InputDecoration(
                 border: InputBorder.none,
@@ -508,7 +551,6 @@ class _TripListState extends State<TripList> {
     }
 }
 
-
 //
 // SUPERMARKET LIST
 //
@@ -533,7 +575,9 @@ class _SupermarketListState extends State<SupermarketList> {
     @override
     void initState() {
         super.initState();
-        appData.load();
+        appData.load().whenComplete(() {
+          setState(() {});
+        });
     }
 
     @override
@@ -622,7 +666,7 @@ class _SupermarketListState extends State<SupermarketList> {
             decoration: new InputDecoration(
                 border: InputBorder.none,
                 focusedBorder  : InputBorder.none,
-                contentPadding : EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+                contentPadding : EdgeInsets.only(left: -10, bottom: 0, top: 0, right: 0),
                 hintText       : "tap to add new item",
                 hintStyle      : TextStyle(
                     fontStyle : FontStyle.italic,
@@ -641,10 +685,26 @@ class _SupermarketListState extends State<SupermarketList> {
           ),
           contentPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 16.0),
           dense: true,
-          leading : IconButton(
-            padding: EdgeInsets.all(4.0),
-            constraints: BoxConstraints(),
-            icon: Icon(Icons.dehaze),
+          leading : Wrap(
+            children: <Widget>[
+              IconButton(
+                padding: EdgeInsets.all(4.0),
+                constraints: BoxConstraints(),
+                icon: Icon(Icons.dehaze),
+              ),
+              IconButton(
+                  padding: EdgeInsets.all(4.0),
+                  constraints: BoxConstraints(),
+                  icon: Icon(Icons.clear),
+                  onPressed: () {
+                      setState( () {
+                          appData.supermarketOrder.remove("");
+                          appData.supermarketOrder.add(""); // this adds it at the end
+                          appData.store();
+                      });
+                  }
+              ),
+            ],
           ),
         );
       } else {
