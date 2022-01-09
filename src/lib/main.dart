@@ -243,7 +243,6 @@ class _HomeListState extends State<HomeList> {
                         appData.homeList.indexWhere((ele) => ele is ProductInputField), // oldIndex
                         appData.homeList.indexOf(entry) + 1 // newIndex
                     );
-                    appData.homeList = reOrderList(appData.homeList, appData.homeList.indexWhere((ele) => ele is ProductInputField), appData.homeList.indexOf(entry) + 1);
                     appData.store();
                 });
             },
@@ -338,6 +337,11 @@ class _HomeListState extends State<HomeList> {
             onSubmitted: (headerName) {
                 setState( () {
                     entry.text = headerName;
+                    appData.homeList = reOrderList( // move the productInputField to below the field that just got something submitted; that's where the user is now looking
+                        appData.homeList,
+                        appData.homeList.indexWhere((ele) => ele is ProductInputField), // oldIndex
+                        appData.homeList.indexOf(entry) + 1 // newIndex
+                    );
                     appData.store();
                 });
             },
@@ -387,6 +391,11 @@ class _HomeListState extends State<HomeList> {
             onSubmitted: (text) {
                 setState( () {
                     appData.homeList.insert(appData.homeList.indexOf(entry), HeaderEntry(id: Uuid().v1(), text: text));
+                    appData.homeList = reOrderList( // move the productInputField to below the field that just got something submitted; that's where the user is now looking
+                        appData.homeList,
+                        appData.homeList.indexWhere((ele) => ele is ProductInputField), // oldIndex
+                        appData.homeList.indexOf(entry) // newIndex
+                    );
                     appData.store();
                 });
             },
