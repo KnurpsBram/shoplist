@@ -291,7 +291,7 @@ class _HomeListState extends State<HomeList> {
             decoration: new InputDecoration(
                 border: InputBorder.none,
                 focusedBorder  : InputBorder.none,
-                contentPadding : EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+                contentPadding : EdgeInsets.only(left: -10, bottom: 0, top: 0, right: 0),
                 hintText       : "tap to add new item",
                 hintStyle      : TextStyle(
                     fontStyle : FontStyle.italic,
@@ -312,10 +312,26 @@ class _HomeListState extends State<HomeList> {
           ),
           contentPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 16.0),
           dense: true,
-          leading : IconButton(
-            padding: EdgeInsets.all(4.0),
-            constraints: BoxConstraints(),
-            icon: Icon(Icons.dehaze),
+          leading : Wrap(
+            children: <Widget>[
+              IconButton(
+                padding: EdgeInsets.all(4.0),
+                constraints: BoxConstraints(),
+                icon: Icon(Icons.dehaze),
+              ),
+              IconButton(
+                  padding: EdgeInsets.all(4.0),
+                  constraints: BoxConstraints(),
+                  icon: Icon(Icons.clear),
+                  onPressed: () {
+                      setState( () {
+                          appData.homeList.remove(entry);
+                          appData.homeList.add(entry); // this adds it at the end
+                          appData.store();
+                      });
+                  }
+              ),
+            ],
           ),
         );
       } else if (entry is HeaderEntry) {
@@ -380,7 +396,7 @@ class _HomeListState extends State<HomeList> {
             decoration: new InputDecoration(
                 border: InputBorder.none,
                 focusedBorder  : InputBorder.none,
-                contentPadding : EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+                contentPadding : EdgeInsets.only(left: -10, bottom: 0, top: 0, right: 0),
                 hintText       : "tap to add new header",
                 hintStyle      : TextStyle(
                     fontWeight: FontWeight.bold,
@@ -402,10 +418,26 @@ class _HomeListState extends State<HomeList> {
           ),
           contentPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 16.0),
           dense: true,
-          leading : IconButton(
-            padding: EdgeInsets.all(4.0),
-            constraints: BoxConstraints(),
-            icon: Icon(Icons.dehaze),
+          leading : Wrap(
+            children: <Widget>[
+              IconButton(
+                padding: EdgeInsets.all(4.0),
+                constraints: BoxConstraints(),
+                icon: Icon(Icons.dehaze),
+              ),
+              IconButton(
+                  padding: EdgeInsets.all(4.0),
+                  constraints: BoxConstraints(),
+                  icon: Icon(Icons.clear),
+                  onPressed: () {
+                      setState( () {
+                          appData.homeList.remove(entry);
+                          appData.homeList.add(entry); // this adds it at the end
+                          appData.store();
+                      });
+                  }
+              ),
+            ],
           ),
         );
       } else {
@@ -634,7 +666,7 @@ class _SupermarketListState extends State<SupermarketList> {
             decoration: new InputDecoration(
                 border: InputBorder.none,
                 focusedBorder  : InputBorder.none,
-                contentPadding : EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+                contentPadding : EdgeInsets.only(left: -10, bottom: 0, top: 0, right: 0),
                 hintText       : "tap to add new item",
                 hintStyle      : TextStyle(
                     fontStyle : FontStyle.italic,
@@ -653,10 +685,26 @@ class _SupermarketListState extends State<SupermarketList> {
           ),
           contentPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 16.0),
           dense: true,
-          leading : IconButton(
-            padding: EdgeInsets.all(4.0),
-            constraints: BoxConstraints(),
-            icon: Icon(Icons.dehaze),
+          leading : Wrap(
+            children: <Widget>[
+              IconButton(
+                padding: EdgeInsets.all(4.0),
+                constraints: BoxConstraints(),
+                icon: Icon(Icons.dehaze),
+              ),
+              IconButton(
+                  padding: EdgeInsets.all(4.0),
+                  constraints: BoxConstraints(),
+                  icon: Icon(Icons.clear),
+                  onPressed: () {
+                      setState( () {
+                          appData.supermarketOrder.remove("");
+                          appData.supermarketOrder.add(""); // this adds it at the end
+                          appData.store();
+                      });
+                  }
+              ),
+            ],
           ),
         );
       } else {
