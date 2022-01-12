@@ -11,16 +11,16 @@ import 'package:shoplist/models/shop-list-entry.dart';
 import 'package:shoplist/util/fs.dart';
 import 'package:shoplist/util/misc.dart';
 
-class RouteScreen extends StatefulWidget {
+class OrderScreen extends StatefulWidget {
     AppData appData;
 
-    RouteScreen(this.appData);
+    OrderScreen(this.appData);
 
     @override
-    RouteScreenState createState() => RouteScreenState(appData);
+    OrderScreenState createState() => OrderScreenState(appData);
 }
 
-class RouteScreenState extends State<RouteScreen> {
+class OrderScreenState extends State<OrderScreen> {
     /// The page where the user crafts the product order of his/her favourite route through the supermarket
     ///
     /// This list should contain every product the user has ever submitted and sorted
@@ -32,7 +32,7 @@ class RouteScreenState extends State<RouteScreen> {
 
     AppData appData;
 
-    RouteScreenState(this.appData);
+    OrderScreenState(this.appData);
 
     @override
     void initState() {
@@ -46,7 +46,7 @@ class RouteScreenState extends State<RouteScreen> {
     Widget build(BuildContext context) {
         return Scaffold(
             appBar: AppBar(
-                title: Text("Route"),
+                title: Text("Order"),
             ),
             body: ReorderableListView(
                 onReorder: (oldIndex, newIndex) {

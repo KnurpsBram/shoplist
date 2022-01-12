@@ -36,23 +36,23 @@ class AppData{
 
     List needsList = [
         HeaderEntry(id: Uuid().v1(), text: "Monday"),
-        ProductEntry(id: Uuid().v1(), text: "pasta"),
-        ProductEntry(id: Uuid().v1(), text: "tomatoes"),
+        ProductEntry(id: Uuid().v1(), text: "Pasta (farfalle)"),
+        ProductEntry(id: Uuid().v1(), text: "Tomatoes"),
         HeaderEntry(id: Uuid().v1(), text: "Tuesday"),
-        ProductEntry(id: Uuid().v1(), text: "rice"),
-        ProductEntry(id: Uuid().v1(), text: "broccoli"),
+        ProductEntry(id: Uuid().v1(), text: "Rice"),
+        ProductEntry(id: Uuid().v1(), text: "2 Broccoli"),
         HeaderInputField(id: Uuid().v1()),
         ProductInputField(id: Uuid().v1()),
     ];
 
     List routeList = [
-      "bananas",
-      "tomatoes",
-      "broccoli",
-      "rice",
-      "pasta",
-      "ice cream",
-      ""
+        "bananas",
+        "tomatoes",
+        "broccoli",
+        "rice",
+        "pasta",
+        "ice cream",
+        ""
     ];
 
     void fromJson(Map<String, dynamic> json) {
@@ -82,6 +82,22 @@ class AppData{
             print("Done loading appData from disk");
         });
     }
+
+    // void moveProductInputFieldBelowMeInNeedsList(Entry entry) {
+    //     appData.needsList = reOrderList(
+    //         appData.needsList,
+    //         appData.needsList.indexWhere((ele) => ele is ProductEntryField), // oldIndex
+    //         appData.needsList.indexOf(entry) + 1, // newIndex
+    //     )
+    // }
+    //
+    // void moveProductInputFieldBelowMeInOrderList(Entry entry) {
+    //     appData.routeList = reOrderList(
+    //         appData.routeList,
+    //         appData.routeList.indexWhere((ele) => ele == ""), // oldIndex
+    //         appData.routeList.indexOf(entry) + 1, // newIndex
+    //     )
+    // }
 
     factory AppData() {
         return _appData;

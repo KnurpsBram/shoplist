@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 
 import 'package:shoplist/models/appdata.dart';
 import 'package:shoplist/models/shop-list-entry.dart';
+import 'package:shoplist/components/product-entry-list-tile.dart';
 import 'package:shoplist/util/fs.dart';
 import 'package:shoplist/util/misc.dart';
 
@@ -66,73 +67,33 @@ class NeedsScreenState extends State<NeedsScreen> {
         );
     }
 
+    void toggleCheckBoxCallback(ProductEntry productEntry) {
+        setState( () {
+            productEntry.toggleCheckBox();
+            appData.store();
+        });
+    }
+
+    void onTextSubmittedCallback(ProductEntry productEntry, String submittedText) {
+          setState( () {
+              productEntry.text = submittedText;
+              String reducedProductName = reduceProductName(submittedText);
+              if (!appData.routeList.contains(reducedProductName)) {
+                  appData.routeList.add(reducedProductName);
+              }
+              appData.needsList = reOrderList( // move the productInputField to below the field that just got something submitted; that's where the user is now looking
+                  appData.needsList,
+                  appData.needsList.indexWhere((ele) => ele is ProductInputField), // oldIndex
+                  appData.needsList.indexOf(productEntry) + 1 // newIndex
+              );
+              appData.store();
+          });
+    }
+
     Widget buildRow(Entry entry) {
         if (entry is ProductEntry) { // TODO: is switch-case possible here?
-            return ListTile(
-                key: ValueKey(entry.id),
-                title: TextField(
-                    controller: TextEditingController(
-                        text: entry.text,
-                    ),
-                    style: TextStyle(
-                        fontSize: 20.0,
-                        color: entry.isCheckedOff ? Colors.grey[350] : Colors.black
-                    ),
-                    decoration: new InputDecoration(
-                        border: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        contentPadding: EdgeInsets.only(left: -10, bottom: 0, top: 0, right: 0),
-                    ),
-                    onSubmitted: (productName) {
-                        setState( () {
-                            entry.text = productName;
-                            String reducedProductName = reduceProductName(productName);
-                            if (!appData.routeList.contains(reducedProductName)) {
-                                appData.routeList.add(reducedProductName);
-                            }
-                            appData.needsList = reOrderList( // move the productInputField to below the field that just got something submitted; that's where the user is now looking
-                                appData.needsList,
-                                appData.needsList.indexWhere((ele) => ele is ProductInputField), // oldIndex
-                                appData.needsList.indexOf(entry) + 1 // newIndex
-                            );
-                            appData.store();
-                        });
-                    },
-                ),
-                contentPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 16.0),
-                dense: true,
-                leading : Wrap(
-                    children: <Widget>[
-                        IconButton(
-                          padding: EdgeInsets.all(4.0),
-                          constraints: BoxConstraints(),
-                          icon: Icon(Icons.dehaze),
-                        ),
-                        IconButton(
-                            padding: EdgeInsets.all(4.0),
-                            constraints: BoxConstraints(),
-                            icon: Icon(Icons.clear),
-                            onPressed: () {
-                                setState( () {
-                                    appData.needsList.remove(entry);
-                                    appData.store();
-                                });
-                            }
-                        ),
-                    ],
-                ),
-                trailing: IconButton(
-                    padding: EdgeInsets.all(4.0),
-                    constraints: BoxConstraints(),
-                    icon: Icon(entry.isCheckedOff ? Icons.check_box_outlined : Icons.check_box_outline_blank),
-                    onPressed: () {
-                        setState( () {
-                            entry.isCheckedOff = !entry.isCheckedOff;
-                            appData.store();
-                        });
-                    }
-                )
-            );
+            return productEntryListTile(entry, onTextSubmittedCallback, toggleCheckBoxCallback);
+
         } else if (entry is ProductInputField) {
             return ListTile(
                 key: ValueKey(entry.id),

@@ -8,7 +8,7 @@ import 'package:uuid/uuid.dart';
 
 import 'package:shoplist/screens/needs.dart';
 import 'package:shoplist/screens/walk.dart';
-import 'package:shoplist/screens/route.dart';
+import 'package:shoplist/screens/order.dart';
 import 'package:shoplist/models/appdata.dart';
 import 'package:shoplist/models/shop-list-entry.dart';
 import 'package:shoplist/util/fs.dart';
@@ -36,7 +36,7 @@ class HomeScreenState extends State<HomeScreen> {
         List <Widget> widgetOptions = <Widget>[
             NeedsScreen(appData),
             WalkScreen(appData),
-            RouteScreen(appData)
+            OrderScreen(appData)
         ];
 
         return Scaffold(
@@ -50,13 +50,14 @@ class HomeScreenState extends State<HomeScreen> {
                         label: 'Needs',
                     ),
                     BottomNavigationBarItem(
-                        icon: Icon(Icons.directions_walk),
+                        // icon: Icon(Icons.directions_walk),
+                        icon: Icon(Icons.shopping_cart),
                         label: 'Walk',
                     ),
                     BottomNavigationBarItem(
                         icon: Icon(Icons.compare_arrows),
                         // icon: Icon(Icons.format_list_bulleted),
-                        label: 'Route',
+                        label: 'Order',
                     ),
                 ],
                 currentIndex: selectedPageIndex,
