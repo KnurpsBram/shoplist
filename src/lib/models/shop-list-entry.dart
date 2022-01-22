@@ -6,15 +6,22 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:shoplist/util/misc.dart';
+import 'package:shoplist/models/appdata.dart';
 
 class Entry {
 
-    String id;
+    // String id;
+    // String id = Uuid().v1();
 
-    Entry({@required this.id});
+    // Entry({@required this.id});
+    // Entry();
+
+    Entry();
 
     factory Entry.fromJson(Map<String, dynamic> json) {
         switch (json['classType']) {
+            case "RouteEntry":
+                return RouteEntry.fromJson(json["attributes"]);
             case "ProductEntry":
                 return ProductEntry.fromJson(json["attributes"]);
             case "HeaderEntry":
@@ -27,15 +34,50 @@ class Entry {
     }
 }
 
+class RouteEntry extends Entry {
+    String text;
+
+    // String my_uuid = Uuid().v1();
+    // RouteEntry({@required String id, @required this.text}) : super(id: id);
+    // RouteEntry({@required this.text}) : super(id: id);
+    RouteEntry({@required this.text});
+
+    String id = Uuid().v1();
+
+    factory RouteEntry.fromJson(Map<String, dynamic> attributes) {
+        return RouteEntry(
+            // id: attributes["id"],
+            text: attributes['text'],
+        );
+    }
+
+    Map<String, dynamic> toJson() {
+        return {
+            'classType': 'RouteEntry',
+            'attributes': {
+                // 'id': super.id,
+                'text': text,
+            }
+        };
+    }
+}
+
 class ProductEntry extends Entry {
     String text;
     bool isCheckedOff;
 
-    ProductEntry({@required String id, @required this.text, this.isCheckedOff=false}) : super(id: id);
+    // String my_uuid = Uuid().v1();
+    // ProductEntry({@required String id, @required this.text, this.isCheckedOff=false}) : super(id: id);
+    // ProductEntry({@required this.text, this.isCheckedOff=false}) : super(id: id);
+    ProductEntry({@required this.text, this.isCheckedOff=false});
+
+    String id = Uuid().v1();
+
+    String reducedProductName() => reduceProductName(text);
 
     factory ProductEntry.fromJson(Map<String, dynamic> attributes) {
         return ProductEntry(
-            id: attributes["id"],
+            // id: attributes["id"],
             text: attributes['text'],
             isCheckedOff: attributes["isCheckedOff"]
         );
@@ -45,26 +87,28 @@ class ProductEntry extends Entry {
         return {
             'classType': 'ProductEntry',
             'attributes': {
-                'id': super.id,
+                // 'id': super.id,
                 'text': text,
                 'isCheckedOff': isCheckedOff
             }
         };
-    }
-
-    void toggleCheckBox() {
-        isCheckedOff = !isCheckedOff;
     }
 }
 
 class HeaderEntry extends Entry {
     String text;
 
-    HeaderEntry({@required String id, @required this.text}) : super(id: id);
+    // String my_uuid = Uuid().v1();
+    // HeaderEntry({@required String id, @required this.text}) : super(id: id);
+    // HeaderEntry({@required this.text}) : super(id: id);
+
+    HeaderEntry({@required this.text});
+
+    String id = Uuid().v1();
 
     factory HeaderEntry.fromJson(Map<String, dynamic> attributes) {
         return HeaderEntry(
-            id: attributes["id"],
+            // id: attributes["id"],
             text: attributes["text"]
         );
     }
@@ -73,7 +117,7 @@ class HeaderEntry extends Entry {
           return {
             'classType': "HeaderEntry",
             'attributes': {
-                'id': super.id,
+                // 'id': super.id,
                 'text': text
             }
         };
@@ -81,30 +125,47 @@ class HeaderEntry extends Entry {
 }
 
 class ProductInputField extends Entry {
-    ProductInputField({@required String id}) : super(id: id);
+    // ProductInputField({@required String id}) : super(id: id);
+
+    // String id;
+    // String my_uuid = Uuid().v1();
+    // ProductInputField() : super(id: id);
+    ProductInputField();
+
+    String id = Uuid().v1();
 
     factory ProductInputField.fromJson(Map<String, dynamic> attributes) {
         return ProductInputField(
-            id: attributes['id']
+            // id: attributes['id']
         );
     }
+
+    String text = "";
 
     Map<String, dynamic> toJson() {
         return {
             'classType': "ProductInputField",
             "attributes": {
-                'id': super.id
+                // 'id': super.id
             }
         };
     }
 }
 
 class HeaderInputField extends Entry {
-    HeaderInputField({@required String id}) : super(id: id);
+
+
+
+    // String my_uuid = Uuid().v1();
+    // HeaderInputField({@required String id}) : super(id: id);
+    // HeaderInputField() : super(id: id);
+    HeaderInputField();
+
+    String id = Uuid().v1();
 
     factory HeaderInputField.fromJson(Map<String, dynamic> attributes) {
         return HeaderInputField(
-            id: attributes['id']
+            // id: attributes['id']
         );
     }
 
@@ -112,7 +173,7 @@ class HeaderInputField extends Entry {
         return {
             'classType': "HeaderInputField",
             "attributes": {
-                'id': super.id
+                // 'id': super.id
             }
         };
     }

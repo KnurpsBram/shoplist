@@ -24,7 +24,7 @@ class AppData{
     /// The routeList is the order in which the products appear if the user follows his or her favourite route
     ///   We're not going to attempt to find the shortest route through the supermarket based on product locations
     ///   That's a travelling salesman problem, which is out of scope for this simple app
-    ///   We assume the user always walks the same route through the supermarket regardless of what items he or she needs
+    ///   We assume the user always NextVisits the same route through the supermarket regardless of what items he or she needs
     ///
     /// Each entry in the needsList has a uuid (universally unique identifier) because it needs that to be reorderable
     /// The name is not the uuid, because the user might enter 'tomatoes' twice, for example
@@ -35,36 +35,51 @@ class AppData{
     static final AppData _appData = new AppData._internal();
 
     List needsList = [
-        HeaderEntry(id: Uuid().v1(), text: "Monday"),
-        ProductEntry(id: Uuid().v1(), text: "Pasta (farfalle)"),
-        ProductEntry(id: Uuid().v1(), text: "Tomatoes"),
-        HeaderEntry(id: Uuid().v1(), text: "Tuesday"),
-        ProductEntry(id: Uuid().v1(), text: "Rice"),
-        ProductEntry(id: Uuid().v1(), text: "2 Broccoli"),
-        HeaderInputField(id: Uuid().v1()),
-        ProductInputField(id: Uuid().v1()),
+        // HeaderEntry(id: Uuid().v1(), text: "Monday"),
+        // ProductEntry(id: Uuid().v1(), text: "Pasta (farfalle)"),
+        // ProductEntry(id: Uuid().v1(), text: "Tomatoes"),
+        // HeaderEntry(id: Uuid().v1(), text: "Tuesday"),
+        // ProductEntry(id: Uuid().v1(), text: "Rice"),
+        // ProductEntry(id: Uuid().v1(), text: "2 Broccoli"),
+        // HeaderInputField(id: Uuid().v1()),
+        // ProductInputField(id: Uuid().v1())
+        HeaderEntry(text: "Monday"),
+        ProductEntry(text: "Pasta (farfalle)"),
+        ProductEntry(text: "Tomatoes"),
+        HeaderEntry(text: "Tuesday"),
+        ProductEntry(text: "Rice"),
+        ProductEntry(text: "2 Broccoli"),
+        HeaderInputField(),
+        ProductInputField()
     ];
 
     List routeList = [
-        "bananas",
-        "tomatoes",
-        "broccoli",
-        "rice",
-        "pasta",
-        "ice cream",
-        ""
+        // RouteEntry(id: Uuid().v1(), text: "bananas"),
+        // RouteEntry(id: Uuid().v1(), text: "tomatoes"),
+        // RouteEntry(id: Uuid().v1(), text: "broccoli"),
+        // RouteEntry(id: Uuid().v1(), text: "rice"),
+        // RouteEntry(id: Uuid().v1(), text: "pasta"),
+        // ProductInputField(id: Uuid().v1())
+        RouteEntry(text: "bananas"),
+        RouteEntry(text: "tomatoes"),
+        RouteEntry(text: "broccoli"),
+        RouteEntry(text: "rice"),
+        RouteEntry(text: "pasta"),
+        ProductInputField()
     ];
 
     void fromJson(Map<String, dynamic> json) {
-      needsList = json["needsList"].map<Entry>((x) => Entry.fromJson(x)).toList();
-      routeList = json["routeList"];
+        needsList = json["needsList"].map<Entry>((x) => Entry.fromJson(x)).toList();
+        // routeList = json["routeList"];
+        routeList = json["routeList"].map<Entry>((x) => Entry.fromJson(x)).toList();
     }
 
     Map<String, dynamic> toJson() {
-      return {
-        "needsList": needsList.map((x) => x.toJson()).toList(),
-        "routeList": routeList,
-      };
+        return {
+            "needsList": needsList.map((x) => x.toJson()).toList(),
+            // "routeList": routeList,
+            "routeList": routeList.map((x) => x.toJson()).toList(),
+        };
     }
 
     Future<void> store() async {
@@ -75,29 +90,13 @@ class AppData{
     }
 
     Future<void> load() async {
-        return loadAppDataString().then((String jsonString) {
-            Map<String, dynamic> json = jsonDecode(jsonString);
-            // jsonPrettyPrint(json); // for debugging
-            fromJson(json);
-            print("Done loading appData from disk");
-        });
+        // return loadAppDataString().then((String jsonString) {
+        //     Map<String, dynamic> json = jsonDecode(jsonString);
+        //     // jsonPrettyPrint(json); // for debugging
+        //     fromJson(json);
+        //     print("Done loading appData from disk");
+        // });
     }
-
-    // void moveProductInputFieldBelowMeInNeedsList(Entry entry) {
-    //     appData.needsList = reOrderList(
-    //         appData.needsList,
-    //         appData.needsList.indexWhere((ele) => ele is ProductEntryField), // oldIndex
-    //         appData.needsList.indexOf(entry) + 1, // newIndex
-    //     )
-    // }
-    //
-    // void moveProductInputFieldBelowMeInOrderList(Entry entry) {
-    //     appData.routeList = reOrderList(
-    //         appData.routeList,
-    //         appData.routeList.indexWhere((ele) => ele == ""), // oldIndex
-    //         appData.routeList.indexOf(entry) + 1, // newIndex
-    //     )
-    // }
 
     factory AppData() {
         return _appData;

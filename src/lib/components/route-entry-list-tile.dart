@@ -11,21 +11,19 @@ import 'package:shoplist/models/shop-list-entry.dart';
 import 'package:shoplist/util/fs.dart';
 import 'package:shoplist/util/misc.dart';
 
-ListTile productEntryListTile(
-    ProductEntry productEntry,
+ListTile routeEntryListTile(
+    RouteEntry routeEntry,
     Function onTextSubmittedCallback,
     Function removeEntryCallback,
-    Function toggleCheckBoxCallback,
 ) {
     return ListTile(
-        key: ValueKey(productEntry.id),
+        key: ValueKey(routeEntry.id),
         title: TextField(
             controller: TextEditingController(
-                text: productEntry.text,
+                text: routeEntry.text,
             ),
             style: TextStyle(
                 fontSize: 20.0,
-                color: productEntry.isCheckedOff ? Colors.grey[350] : Colors.black
             ),
             decoration: new InputDecoration(
                 border: InputBorder.none,
@@ -54,14 +52,6 @@ ListTile productEntryListTile(
                     }
                 ),
             ],
-        ),
-        trailing: IconButton(
-            padding: EdgeInsets.all(4.0),
-            constraints: BoxConstraints(),
-            icon: Icon(productEntry.isCheckedOff ? Icons.check_box_outlined : Icons.check_box_outline_blank),
-            onPressed: () {
-                toggleCheckBoxCallback();
-            }
         )
     );
 }

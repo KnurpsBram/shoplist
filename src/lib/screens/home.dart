@@ -7,8 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:shoplist/screens/needs.dart';
-import 'package:shoplist/screens/walk.dart';
-import 'package:shoplist/screens/order.dart';
+import 'package:shoplist/screens/next-visit.dart';
+import 'package:shoplist/screens/route.dart';
 import 'package:shoplist/models/appdata.dart';
 import 'package:shoplist/models/shop-list-entry.dart';
 import 'package:shoplist/util/fs.dart';
@@ -35,8 +35,8 @@ class HomeScreenState extends State<HomeScreen> {
 
         List <Widget> widgetOptions = <Widget>[
             NeedsScreen(appData),
-            WalkScreen(appData),
-            OrderScreen(appData)
+            NextVisitScreen(appData),
+            RouteScreen(appData)
         ];
 
         return Scaffold(
@@ -50,14 +50,14 @@ class HomeScreenState extends State<HomeScreen> {
                         label: 'Needs',
                     ),
                     BottomNavigationBarItem(
-                        // icon: Icon(Icons.directions_walk),
+                        // icon: Icon(Icons.directions_NextVisit),
                         icon: Icon(Icons.shopping_cart),
-                        label: 'Walk',
+                        label: 'Next Visit',
                     ),
                     BottomNavigationBarItem(
                         icon: Icon(Icons.compare_arrows),
                         // icon: Icon(Icons.format_list_bulleted),
-                        label: 'Order',
+                        label: 'Route',
                     ),
                 ],
                 currentIndex: selectedPageIndex,

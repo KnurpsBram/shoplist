@@ -11,39 +11,44 @@ import 'package:shoplist/models/shop-list-entry.dart';
 import 'package:shoplist/util/fs.dart';
 import 'package:shoplist/util/misc.dart';
 
-ListTile productEntryListTile(
-    ProductEntry productEntry,
+ListTile productInputFieldListTile(
+    ProductInputField entry,
     Function onTextSubmittedCallback,
     Function removeEntryCallback,
-    Function toggleCheckBoxCallback,
 ) {
     return ListTile(
-        key: ValueKey(productEntry.id),
+        key: ValueKey(entry.id),
         title: TextField(
             controller: TextEditingController(
-                text: productEntry.text,
+                text: "",
             ),
             style: TextStyle(
                 fontSize: 20.0,
-                color: productEntry.isCheckedOff ? Colors.grey[350] : Colors.black
+                color: Colors.black
             ),
             decoration: new InputDecoration(
                 border: InputBorder.none,
                 focusedBorder: InputBorder.none,
                 contentPadding: EdgeInsets.only(left: -10, bottom: 0, top: 0, right: 0),
+                hintText: "tap to add new item",
+                hintStyle: TextStyle(
+                    fontStyle: FontStyle.italic,
+                    fontSize: 12.0,
+                    color: Colors.grey,
+                )
             ),
             onSubmitted: (submittedText) {
                 onTextSubmittedCallback(submittedText);
-            }
+            },
         ),
         contentPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 16.0),
         dense: true,
-        leading : Wrap(
+        leading: Wrap(
             children: <Widget>[
                 IconButton(
-                  padding: EdgeInsets.all(4.0),
-                  constraints: BoxConstraints(),
-                  icon: Icon(Icons.dehaze),
+                    padding: EdgeInsets.all(4.0),
+                    constraints: BoxConstraints(),
+                    icon: Icon(Icons.dehaze),
                 ),
                 IconButton(
                     padding: EdgeInsets.all(4.0),
@@ -55,13 +60,5 @@ ListTile productEntryListTile(
                 ),
             ],
         ),
-        trailing: IconButton(
-            padding: EdgeInsets.all(4.0),
-            constraints: BoxConstraints(),
-            icon: Icon(productEntry.isCheckedOff ? Icons.check_box_outlined : Icons.check_box_outline_blank),
-            onPressed: () {
-                toggleCheckBoxCallback();
-            }
-        )
     );
 }
