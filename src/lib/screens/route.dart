@@ -7,7 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:shoplist/models/appdata.dart';
-import 'package:shoplist/models/shop-list-entry.dart';
+import 'package:shoplist/models/entry.dart';
+import 'package:shoplist/models/route-entry.dart';
+import 'package:shoplist/models/product-input-field.dart';
 import 'package:shoplist/components/route-entry-list-tile.dart';
 import 'package:shoplist/components/product-input-field-list-tile.dart';
 import 'package:shoplist/util/fs.dart';
@@ -111,116 +113,4 @@ class RouteScreenState extends State<RouteScreen> {
         }
         return productInputFieldListTile(entry, onTextSubmittedCallback, removeEntryCallback);
     }
-
-//     Widget buildRow(String productName) {
-//         if (productName != "") { // TODO: is switch-case possible here?
-//             return ListTile(
-//                 key: ValueKey(productName),
-//                 title: TextField(
-//                     controller: TextEditingController(
-//                         text: productName,
-//                     ),
-//                     style: TextStyle(
-//                         fontSize: 20.0,
-//                         color: Colors.black
-//                     ),
-//                     decoration: new InputDecoration(
-//                         border: InputBorder.none,
-//                         focusedBorder: InputBorder.none,
-//                         contentPadding: EdgeInsets.only(left: -10, bottom: 0, top: 0, right: 0),
-//                     ),
-//                     onSubmitted: (text) {
-//                         setState( () {
-//                             if (!appData.routeList.contains(text)) {
-//                                 productName = text;
-//                             }
-//                             appData.routeList = reOrderList( // move the productInputField to below the field that just got something submitted; that's where the user is now looking
-//                                 appData.routeList,
-//                                 appData.routeList.indexWhere((ele) => ele == ""), // oldIndex
-//                                 appData.routeList.indexOf(productName) + 1 // newIndex
-//                             );
-//                             appData.store();
-//                         });
-//                     },
-//                 ),
-//                 contentPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 16.0),
-//                 dense: true,
-//                 leading : Wrap(
-//                     children: <Widget>[
-//                         IconButton(
-//                             padding: EdgeInsets.all(4.0),
-//                             constraints: BoxConstraints(),
-//                             icon: Icon(Icons.dehaze),
-//                         ),
-//                         IconButton(
-//                             padding: EdgeInsets.all(4.0),
-//                             constraints: BoxConstraints(),
-//                             icon: Icon(Icons.clear),
-//                             onPressed: () {
-//                                 setState( () {
-//                                     appData.routeList.remove(productName);
-//                                     appData.store();
-//                                 });
-//                             }
-//                         ),
-//                     ],
-//                 ),
-//             );
-//         } else if (productName == "") {
-//             return ListTile(
-//                 key: ValueKey("ProductInputField"),
-//                 title: TextField(
-//                   controller: TextEditingController(
-//                       text: "",
-//                   ),
-//                   decoration: new InputDecoration(
-//                       border: InputBorder.none,
-//                       focusedBorder  : InputBorder.none,
-//                       contentPadding : EdgeInsets.only(left: -10, bottom: 0, top: 0, right: 0),
-//                       hintText       : "tap to add new item",
-//                       hintStyle      : TextStyle(
-//                           fontStyle : FontStyle.italic,
-//                           fontSize  : 12.0,
-//                           color     : Colors.grey,
-//                       )
-//                   ),
-//                   onSubmitted: (text) {
-//                       setState( () {
-//                         if (!appData.routeList.contains(text)) {
-//                           appData.routeList.insert(appData.routeList.indexOf(""), text);
-//                           appData.store();
-//                         }
-//                       });
-//                   },
-//                 ),
-//                 contentPadding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 16.0),
-//                 dense: true,
-//                 leading : Wrap(
-//                     children: <Widget>[
-//                         IconButton(
-//                             padding: EdgeInsets.all(4.0),
-//                             constraints: BoxConstraints(),
-//                             icon: Icon(Icons.dehaze),
-//                         ),
-//                         IconButton(
-//                             padding: EdgeInsets.all(4.0),
-//                             constraints: BoxConstraints(),
-//                             icon: Icon(Icons.clear),
-//                             onPressed: () {
-//                                 setState( () {
-//                                     appData.routeList.remove("");
-//                                     appData.routeList.add(""); // this adds it at the end
-//                                     appData.store();
-//                                 });
-//                             }
-//                         ),
-//                     ],
-//                 ),
-//             );
-//         } else {
-//             print("unsupported type");
-//         }
-//     }
-
-
 }

@@ -10,7 +10,6 @@ import 'package:shoplist/screens/needs.dart';
 import 'package:shoplist/screens/next-visit.dart';
 import 'package:shoplist/screens/route.dart';
 import 'package:shoplist/models/appdata.dart';
-import 'package:shoplist/models/shop-list-entry.dart';
 import 'package:shoplist/util/fs.dart';
 import 'package:shoplist/util/misc.dart';
 

@@ -4,9 +4,13 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
 
-import 'package:shoplist/models/shop-list-entry.dart';
+import 'package:shoplist/models/entry.dart';
+import 'package:shoplist/models/route-entry.dart';
+import 'package:shoplist/models/product-entry.dart';
+import 'package:shoplist/models/header-entry.dart';
+import 'package:shoplist/models/product-input-field.dart';
+import 'package:shoplist/models/header-input-field.dart';
 import 'package:shoplist/util/fs.dart';
 import 'package:shoplist/util/misc.dart';
 
@@ -35,14 +39,6 @@ class AppData{
     static final AppData _appData = new AppData._internal();
 
     List needsList = [
-        // HeaderEntry(id: Uuid().v1(), text: "Monday"),
-        // ProductEntry(id: Uuid().v1(), text: "Pasta (farfalle)"),
-        // ProductEntry(id: Uuid().v1(), text: "Tomatoes"),
-        // HeaderEntry(id: Uuid().v1(), text: "Tuesday"),
-        // ProductEntry(id: Uuid().v1(), text: "Rice"),
-        // ProductEntry(id: Uuid().v1(), text: "2 Broccoli"),
-        // HeaderInputField(id: Uuid().v1()),
-        // ProductInputField(id: Uuid().v1())
         HeaderEntry(text: "Monday"),
         ProductEntry(text: "Pasta (farfalle)"),
         ProductEntry(text: "Tomatoes"),
@@ -54,12 +50,6 @@ class AppData{
     ];
 
     List routeList = [
-        // RouteEntry(id: Uuid().v1(), text: "bananas"),
-        // RouteEntry(id: Uuid().v1(), text: "tomatoes"),
-        // RouteEntry(id: Uuid().v1(), text: "broccoli"),
-        // RouteEntry(id: Uuid().v1(), text: "rice"),
-        // RouteEntry(id: Uuid().v1(), text: "pasta"),
-        // ProductInputField(id: Uuid().v1())
         RouteEntry(text: "bananas"),
         RouteEntry(text: "tomatoes"),
         RouteEntry(text: "broccoli"),
@@ -90,12 +80,12 @@ class AppData{
     }
 
     Future<void> load() async {
-        // return loadAppDataString().then((String jsonString) {
-        //     Map<String, dynamic> json = jsonDecode(jsonString);
-        //     // jsonPrettyPrint(json); // for debugging
-        //     fromJson(json);
-        //     print("Done loading appData from disk");
-        // });
+        return loadAppDataString().then((String jsonString) {
+            Map<String, dynamic> json = jsonDecode(jsonString);
+            // jsonPrettyPrint(json); // for debugging
+            fromJson(json);
+            print("Done loading appData from disk");
+        });
     }
 
     factory AppData() {

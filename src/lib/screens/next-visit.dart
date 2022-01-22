@@ -7,11 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:shoplist/models/appdata.dart';
-import 'package:shoplist/models/shop-list-entry.dart';
+import 'package:shoplist/models/entry.dart';
+import 'package:shoplist/models/product-entry.dart';
+import 'package:shoplist/models/product-input-field.dart';
 import 'package:shoplist/components/product-entry-list-tile.dart';
-import 'package:shoplist/components/header-entry-list-tile.dart';
 import 'package:shoplist/components/product-input-field-list-tile.dart';
-import 'package:shoplist/components/header-input-field-list-tile.dart';
 import 'package:shoplist/util/fs.dart';
 import 'package:shoplist/util/misc.dart';
 

@@ -7,7 +7,12 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:shoplist/models/appdata.dart';
-import 'package:shoplist/models/shop-list-entry.dart';
+import 'package:shoplist/models/entry.dart';
+import 'package:shoplist/models/route-entry.dart';
+import 'package:shoplist/models/product-entry.dart';
+import 'package:shoplist/models/header-entry.dart';
+import 'package:shoplist/models/product-input-field.dart';
+import 'package:shoplist/models/header-input-field.dart';
 import 'package:shoplist/components/product-entry-list-tile.dart';
 import 'package:shoplist/components/header-entry-list-tile.dart';
 import 'package:shoplist/components/product-input-field-list-tile.dart';
@@ -81,23 +86,26 @@ class NeedsScreenState extends State<NeedsScreen> {
         }
     }
 
+    void addToRouteList(String text) {
+        if (!appData.routeList.map((x) => x.text).contains(reduceProductName(text))) {
+            appData.routeList.add(RouteEntry(text: reduceProductName(text)));
+        }
+    }
+
+    void putProductInputFieldBelowMe(Entry entry) {
+        appData.needsList = reOrderList(
+            appData.needsList,
+            appData.needsList.indexWhere((ele) => ele is ProductInputField), // oldIndex
+            appData.needsList.indexOf(entry) + 1 // newIndex
+        );
+    }
+
     Widget buildProductEntryRow(ProductEntry entry) {
         void onTextSubmittedCallback(String submittedText) {
              setState( () {
                  entry.text = submittedText;
-
-                 // if (!appData.routeList.contains(entry.reducedProductName())) {
-                 //     appData.routeList.add(entry.reducedProductName());
-                 // }
-
-                 // TODO: don't double-add in the routeList
-                 appData.routeList.add(RouteEntry(text: reduceProductName(submittedText)));
-
-                 appData.needsList = reOrderList(
-                     appData.needsList,
-                     appData.needsList.indexWhere((ele) => ele is ProductInputField), // oldIndex
-                     appData.needsList.indexOf(entry) + 1 // newIndex
-                 );
+                 addToRouteList(submittedText);
+                 putProductInputFieldBelowMe(entry);
                  appData.store();
              });
          }
@@ -120,11 +128,7 @@ class NeedsScreenState extends State<NeedsScreen> {
         void onTextSubmittedCallback(submittedText) {
             setState( () {
                 entry.text = submittedText;
-                appData.needsList = reOrderList(
-                    appData.needsList,
-                    appData.needsList.indexWhere((ele) => ele is ProductInputField), // oldIndex
-                    appData.needsList.indexOf(entry) + 1 // newIndex
-                );
+                putProductInputFieldBelowMe(entry);
                 appData.store();
             });
         }
@@ -141,15 +145,7 @@ class NeedsScreenState extends State<NeedsScreen> {
         void onTextSubmittedCallback(submittedText) {
             setState( () {
                 appData.needsList.insert(appData.needsList.indexOf(entry), ProductEntry(text: submittedText));
-                String reducedProductName = reduceProductName(submittedText);
-
-                // if (!appData.routeList.contains(reducedProductName)) {
-                //     appData.routeList.add(reducedProductName);
-                // }
-
-                // TODO: don't double-add in the routeList
-                appData.routeList.add(RouteEntry(text: reduceProductName(submittedText)));
-
+                addToRouteList(submittedText);
                 appData.store();
             });
         }
@@ -167,12 +163,8 @@ class NeedsScreenState extends State<NeedsScreen> {
         void onTextSubmittedCallback(submittedText) {
             setState( () {
                 appData.needsList.insert(appData.needsList.indexOf(entry), HeaderEntry(text: submittedText));
-                appData.needsList = reOrderList( // move the productInputField to below the field that just got something submitted; that's where the user is now looking
-                    appData.needsList,
-                    appData.needsList.indexWhere((ele) => ele is ProductInputField), // oldIndex
-                    appData.needsList.indexOf(entry) + 1 // newIndex
-                );
-                appData.needsList = reOrderList( // move the productInputField to below the field that just got something submitted; that's where the user is now looking
+                putProductInputFieldBelowMe(entry);
+                appData.needsList = reOrderList( // move the headerInputField to below productInputField
                     appData.needsList,
                     appData.needsList.indexOf(entry), // oldIndex
                     appData.needsList.indexOf(entry) + 2// newIndex

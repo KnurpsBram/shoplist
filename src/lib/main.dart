@@ -8,9 +8,6 @@ import 'package:uuid/uuid.dart';
 
 import 'package:shoplist/screens/home.dart';
 import 'package:shoplist/models/appdata.dart';
-import 'package:shoplist/models/shop-list-entry.dart';
-import 'package:shoplist/util/fs.dart';
-import 'package:shoplist/util/misc.dart';
 
 Future<void> main() async {
 
