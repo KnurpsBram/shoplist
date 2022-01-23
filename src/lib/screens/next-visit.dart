@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 
 import 'package:shoplist/models/appdata.dart';
 import 'package:shoplist/models/entry.dart';
+import 'package:shoplist/models/route-entry.dart';
 import 'package:shoplist/models/product-entry.dart';
 import 'package:shoplist/models/product-input-field.dart';
 import 'package:shoplist/components/product-entry-list-tile.dart';
@@ -58,9 +59,37 @@ class NextVisitScreenState extends State<NextVisitScreen> {
 
         return Scaffold(
             appBar: AppBar(
-                title: Text("NextVisit (dragging tiles disabled...)"),
+                title: Text("NextVisit"),
             ),
-            body: ListView( // TODO: ReorderableListView
+            // body: ListView( // TODO: ReorderableListView
+            body: ReorderableListView(
+                onReorder: (oldIndex, newIndex) {
+                    setState(() {
+
+                        /// TODO: there's some bug
+                        /// when using ReorderableListView and printing oldIndex and newIndex
+                        /// you will see that dragging a tile one step to a lower position in the list indeed has oldIndex=1, newIndex=0 for instance
+                        /// but dragging a tile one step higher makes oldIndex=1, newIndex=3. I think newIndex is too high when shifting up
+                        /// this causes issues when dragging an item to the end of the list
+                        /// I've circumvented the issue with the if-statements here
+                        /// but I'd rather understand whether this is truly a flutter bug or some purposeful design I don't understand
+                        int newIndexRouteList;
+                        if (oldIndex != newIndex) {
+                            int oldIndexRouteList = appData.routeList.indexWhere((ele) => ele.text == nextVisitList[oldIndex].reducedProductName());
+                            if (newIndex >= nextVisitList.length) {
+                                newIndexRouteList = appData.routeList.length - 1;
+                            } else {
+                                newIndexRouteList = appData.routeList.indexWhere((ele) => ele.text == nextVisitList[newIndex].reducedProductName());
+                            }
+                            appData.routeList = reOrderList(
+                                appData.routeList,
+                                oldIndexRouteList,
+                                newIndexRouteList
+                            );
+                            appData.store();
+                        }
+                    });
+                },
                 children: [
                     for (final entry in nextVisitList) buildRow(entry)
                 ]
@@ -77,18 +106,26 @@ class NextVisitScreenState extends State<NextVisitScreen> {
         }
     }
 
+    void addToRouteList(String text) {
+        if (!appData.routeList.map((x) => x.text).contains(reduceProductName(text))) {
+            appData.routeList.add(RouteEntry(text: reduceProductName(text)));
+        }
+    }
+
+    void putProductInputFieldBelowMe(Entry entry) {
+        appData.needsList = reOrderList(
+            appData.routeList,
+            appData.routeList.indexWhere((ele) => ele is ProductInputField), // oldIndex
+            appData.routeList.indexOf(entry) + 1 // newIndex
+        );
+    }
+
     Widget buildProductEntryRow(ProductEntry entry) {
         void onTextSubmittedCallback(String submittedText) {
              setState( () {
                  entry.text = submittedText;
-                 if (!appData.routeList.contains(entry.reducedProductName())) {
-                     appData.routeList.add(entry.reducedProductName());
-                 }
-                 // appData.needsList = reOrderList(
-                 //     appData.needsList,
-                 //     appData.needsList.indexWhere((ele) => ele is ProductInputField), // oldIndex
-                 //     appData.needsList.indexOf(entry) + 1 // newIndex
-                 // );
+                 addToRouteList(submittedText);
+                 putProductInputFieldBelowMe(entry);
                  appData.store();
              });
          }
@@ -111,10 +148,7 @@ class NextVisitScreenState extends State<NextVisitScreen> {
         void onTextSubmittedCallback(submittedText) {
             setState( () {
                 appData.needsList.insert(appData.needsList.indexOf(entry), ProductEntry(text: submittedText));
-                String reducedProductName = reduceProductName(submittedText);
-                if (!appData.routeList.contains(reducedProductName)) {
-                    appData.routeList.add(reducedProductName);
-                }
+                addToRouteList(submittedText);
                 appData.store();
             });
         }
