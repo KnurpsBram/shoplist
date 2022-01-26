@@ -60,14 +60,12 @@ class AppData{
 
     void fromJson(Map<String, dynamic> json) {
         needsList = json["needsList"].map<Entry>((x) => Entry.fromJson(x)).toList();
-        // routeList = json["routeList"];
         routeList = json["routeList"].map<Entry>((x) => Entry.fromJson(x)).toList();
     }
 
     Map<String, dynamic> toJson() {
         return {
             "needsList": needsList.map((x) => x.toJson()).toList(),
-            // "routeList": routeList,
             "routeList": routeList.map((x) => x.toJson()).toList(),
         };
     }

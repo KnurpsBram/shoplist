@@ -54,8 +54,9 @@ class NextVisitScreenState extends State<NextVisitScreen> {
     @override
     Widget build(BuildContext context) {
         var nextVisitList;
-        nextVisitList = List.from(appData.needsList.where((x) => (x is ProductEntry)));
-        nextVisitList.sort((a, b) => appData.routeList.indexWhere((ele) => ele.text == a.reducedProductName()) - appData.routeList.indexWhere((ele) => ele.text == b.reducedProductName()) as int);
+        // nextVisitList = List.from(appData.needsList.where((x) => (x is ProductEntry)));
+        nextVisitList = List.from(appData.needsList.where((x) => (x is ProductEntry) | (x is ProductInputField) ));
+        nextVisitList.sort((a, b) => appData.routeList.indexWhere((ele) => ele.text == reduceProductName(a.text)) - appData.routeList.indexWhere((ele) => ele.text == reduceProductName(b.text)) as int);
 
         return Scaffold(
             appBar: AppBar(
@@ -75,11 +76,11 @@ class NextVisitScreenState extends State<NextVisitScreen> {
                         /// but I'd rather understand whether this is truly a flutter bug or some purposeful design I don't understand
                         int newIndexRouteList;
                         if (oldIndex != newIndex) {
-                            int oldIndexRouteList = appData.routeList.indexWhere((ele) => ele.text == nextVisitList[oldIndex].reducedProductName());
+                            int oldIndexRouteList = appData.routeList.indexWhere((ele) => ele.text == reduceProductName(nextVisitList[oldIndex].text));
                             if (newIndex >= nextVisitList.length) {
-                                newIndexRouteList = appData.routeList.length - 1;
+                                newIndexRouteList = appData.routeList.length;
                             } else {
-                                newIndexRouteList = appData.routeList.indexWhere((ele) => ele.text == nextVisitList[newIndex].reducedProductName());
+                                newIndexRouteList = appData.routeList.indexWhere((ele) => ele.text == reduceProductName(nextVisitList[newIndex].text));
                             }
                             appData.routeList = reOrderList(
                                 appData.routeList,
@@ -112,11 +113,31 @@ class NextVisitScreenState extends State<NextVisitScreen> {
         }
     }
 
-    void putProductInputFieldBelowMe(Entry entry) {
-        appData.needsList = reOrderList(
+    void insertInRouteList(int index, String text) {
+        if (!appData.routeList.map((x) => x.text).contains(reduceProductName(text))) {
+            appData.routeList.insert(index, RouteEntry(text: reduceProductName(text)));
+        } else {
+            appData.routeList = reOrderList(
+                appData.routeList,
+                appData.routeList.indexWhere((ele) => ele.text == reduceProductName(text)), // oldIndex
+                index // newIndex
+            );
+        }
+    }
+
+    void putProductInputFieldBelowMe(ProductEntry productEntry) {
+        appData.routeList = reOrderList(
             appData.routeList,
             appData.routeList.indexWhere((ele) => ele is ProductInputField), // oldIndex
-            appData.routeList.indexOf(entry) + 1 // newIndex
+            appData.routeList.indexWhere((ele) => ele.text == reduceProductName(productEntry.text)) + 1 // newIndex
+        );
+    }
+
+    void putProductInputFieldBottom() {
+        appData.routeList = reOrderList(
+            appData.routeList,
+            appData.routeList.indexWhere((ele) => ele is ProductInputField), // oldIndex
+            appData.routeList.length // newIndex
         );
     }
 
@@ -147,16 +168,14 @@ class NextVisitScreenState extends State<NextVisitScreen> {
     Widget buildProductInputFieldRow(ProductInputField entry) {
         void onTextSubmittedCallback(submittedText) {
             setState( () {
-                appData.needsList.insert(appData.needsList.indexOf(entry), ProductEntry(text: submittedText));
-                addToRouteList(submittedText);
+                appData.needsList.add(ProductEntry(text: submittedText));
+                insertInRouteList(appData.routeList.indexWhere((ele) => ele is ProductInputField), submittedText);
                 appData.store();
             });
         }
         void removeEntryCallback() {
             setState( () {
-                appData.needsList.remove(entry);
-                appData.needsList.add(entry); // this adds it at the end
-                appData.store();
+                putProductInputFieldBottom();
             });
         }
         return productInputFieldListTile(entry, onTextSubmittedCallback, removeEntryCallback);
